@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html" />
+    <meta charset="utf-8" />
+    
+  	<title>Reverse E-Invaders</title>
+    
+    <link rel="stylesheet" href="colors/kingdom.css" />
+    
+    <meta name="copyright" content="B&E's Anthro Movies Inc, 2013" />
+  	<meta name="author" content="Timothy Batchelder" />
+  </head>
+
+  <body>
+    <!-- Background sound used during the game -->
+    <audio id="bg">
+      <source src="waves/music.mp3" type="audio/mpeg" loop />
+      <source src="waves/music.ogg" type="audio/ogg" loop />
+    </audio>
+    <!-- Shooting sounds -->
+    <audio id="shots">
+      <source src="waves/shoot.mp3" type="audio/mpeg" />
+      <source src="waves/shoot.ogg" type="audio/ogg" />
+    </audio>
+    <!-- Explosion sounds -->
+    <audio id="bg">
+      <source src="waves/explosion.mp3" type="audio/mpeg" />
+      <source src="waves/explosion.ogg" type="audio/ogg" />
+    </audio>
+    
+    <!-- Main game area -->
+    <div id="stage">
+    
+      <!-- Game Canvas -->
+      <div id="gameCanvas">
+        <div id="title">
+          <h1>Reverse Envaders</h1>
+        </div>
+        
+        <div id="compLevels">
+          
+        </div>
+        
+        <div id="canvas">
+          <canvas height="750px" width="700px"></canvas>
+        </div>
+        
+        <div id="playerLevels">
+          
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="orders/frameControl.js"></script>
+  <script src="orders/beings.js"></script>
+  <script src="orders/highcommand.js"></script>
+  <script src="orders/highCommand.js"></script>
+</html>
