@@ -1,0 +1,10 @@
+.info {
+  background-color: aquamarine;
+  float: left;
+  width: 25%;
+}
+
+.game {
+  float: left;
+  background-color: bisque;
+}
