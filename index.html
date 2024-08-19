@@ -2,41 +2,104 @@
 <html lang="en">
 
   <head>
-    <meta http-equiv="content-type" content="text/html" />
     <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html" />
+        
+  	<title>Reverse Envaders</title>
     
-  	<title>Reverse Invaders</title>
-    
-    <link rel="stylesheet" href="colors/kingdom.css" />
-    
-    <meta name="copyright" content="B&E's Anthro Movies Inc, 2013" />
+    <link rel="stylesheet" href="vista/world.css" />
+    <link rel="stylesheet" href="vista/atmos.css" />
+
+    <meta name="copyright" content="B&E's Anthro Movies Inc, 2024" />
   	<meta name="author" content="Timothy Batchelder" />
   </head>
 
   <body>
+    <header>
+
+    </header>
+        
+    <main>
+      <h1>Reverse Envaders</h1>
+      <h2>So, what is this?</h2>
+      <p>This is an old idea I had from 2013 that I would like to resurrent as an example of my ability.</p>
+      <p>So, back then, I was using Director.  This was a great program from Macromedia (along with Flash).  
+        It allowed you to build entire programs using it's Lingo code.  It even eventually had some of the first
+        3D modeling that you could get on the web.  Sadly, Adobe bought it and basically killed it.  Project dead.
+      </p>
+      <p>Now that my site is closing, I need a new career.  So I've been looking at my old ideas and seeing if they
+        can be resurrected in some manner.  This seems like a "simple" possibility.
+      </p>
+      <h2>Premise</h2>
+      <p>It's the opposite of Space Invaders.  Instead of controlling the cannon and shooting the aliens, YOU'RE
+        the "aliens" and your mission is to destroy the cities.  ... wow, that sounds a bit evil ... so, let's make
+        a bit of a change.  You're not an alien, you're a agent of Gia and your mission is to stop the advance of
+        humans that are destroying the world.  So, you're not an "Invader", you're an Environmental Invader.
+      </p>
+      <h2>Things to do</h2>
+      <ol>
+        <li>Resurrect it as an active idea. DONE</li>
+        <li>Set it up in VS Code. DONE</li>
+        <li>Create a Git repository to collaborate.  DONE</li>
+        <li>Go thru it and clean out the junk.  Inprogress</li>
+        <li>Create this to define what is needed. Inprogress</li>
+        <li>Build a layout format.</li>
+        <li>Decide on a color scheme.</li>
+        <li>Decide on a naming covention for files. Inprogress</li>
+        <li>Get a single sprite to show up from a list of sprites.</li>
+        <li>Get a single sprite to animate it's movements.</li>
+        <li>Get a single sprite to move across the screen within limits.</li>
+        <li>Get a row of sprites to move across the screen within limits.</li>
+        <li>Get multiple rows of sprites to move within limits.</li>
+        <li>Get a single sprite to fire based on a keypress.</li>
+        <li>Get random landscape to show up.</li>
+        <li>Get NPC gun to move within limits.</li>
+        <li>Get NPC gun to select and track a target.</li>
+        <li>Get NPC gun to avoid incoming fire.</li>
+        <li>Get NPC gun to fire at player.</li>
+        <li>Get NPC gun to not fire at shields.</li>
+        <li>Get NPC city to build parts.</li>
+        <li>Get NPC super weapon to fill up based on parts made.</li>
+        <li>Get NPC fighters to move within limits.</li>
+        <li>Get NPC fighters to fire on targets.</li>
+        <li>Get NPC fighters to explode when hit.</li>
+        <li>Get shield damaged when hit.</li>
+        <li>Get shield to absorb shots.</li>
+        <li>Get player unit charging to follow each unit.</li>
+        <li>Get player to not fire while charging.</li>
+        <li>Get player to fire only when charged.</li>
+        <li>Get player super-charge to grow as "damage" is done.</li>
+        <li>Get player units super-charged.</li>
+        <li>Get player rewards scale.</li>
+      </ol>
+    </main>
+        
+    <footer>
+        
+    </footer>
     <!-- Background sound used during the game -->
-    <audio id="bg">
+    <!-- <audio id="bg">
       <source src="waves/music.mp3" type="audio/mpeg" loop />
       <source src="waves/music.ogg" type="audio/ogg" loop />
-    </audio>
+    </audio> -->
     <!-- Shooting sounds -->
-    <audio id="shots">
+    <!-- <audio id="shots">
       <source src="waves/shoot.mp3" type="audio/mpeg" />
       <source src="waves/shoot.ogg" type="audio/ogg" />
-    </audio>
+    </audio> -->
     <!-- Explosion sounds -->
-    <audio id="bg">
+    <!-- <audio id="bg">
       <source src="waves/explosion.mp3" type="audio/mpeg" />
       <source src="waves/explosion.ogg" type="audio/ogg" />
-    </audio>
+    </audio> -->
     
     <!-- Main game area -->
-    <div id="stage">
+    <!-- <div id="world"> -->
     
       <!-- Game Canvas -->
-      <div id="gameCanvas">
+      <!-- <div id="gameCanvas">
         <div id="title">
-          <h1>Reverse Invaders</h1>
+          <h1>Reverse Envaders</h1>
         </div>
         
         <div id="compLevels">
@@ -50,11 +113,11 @@
         <div id="playerLevels">
           
         </div>
-      </div>
-    </div>
+      </div> -->
+    <!-- </div> -->
   </body>
-  <script src="orders/frameControl.js"></script>
+  <!-- <script src="orders/frameControl.js"></script>
   <script src="orders/beings.js"></script>
   <script src="orders/highcommand.js"></script>
-  <script src="orders/highCommand.js"></script>
+  <script src="orders/highCommand.js"></script> -->
 </html>
