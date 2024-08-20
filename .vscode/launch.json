@@ -13,7 +13,7 @@
       "name": "Node: Current File",
       "type": "node",
       "request": "launch",
-      "program": "${file}",
+      "program": "${workspaceFolder}/genes/basics.js",
       "console": "integratedTerminal"
     }
   ]
