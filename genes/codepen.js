@@ -8,23 +8,29 @@
 const CTX = document.getElementById("myCanvas").getContext("2d");
 const CANVASMINX = 0;
 const CANVASMINY = 0;
-const CANVASMAXX = 800;
+const CANVASMAXX = 1000;
 const CANVASMAXY = 800;
-const BGColor = "#75f075";
+const BGCOLOR = "#75f075";
 
 // Game constants
+// List of when each gear item becomes available (both)
+const GEARLEVELLIST = [70, 150, 230, 310, 390, 470, 550, 630, 710, 790];
 
 // Game variables
-var eLevel = 0;         // NPC level
-var eShielded = false;  // NPC shield is built
-var eX = 400;           // NPC x position
-var edX = 0;            // NPC movement direction
-var eOut = false;       // NPC knocked out (start new level if player alive)
-var paused = true;      // Is the game paused (initially, yes)
+var eLevel = 0;                     // NPC level
+var eShielded = false;              // NPC shield is built
+var eX = 500;                       // NPC x position
+var edX = -1;                        // NPC movement direction
+var eOut = false;                   // NPC knocked out (start new level if player alive)
+var paused = true;                  // Is the game paused (initially, yes)
+var cityList = new Array();         // List of buildings in the city
+var eGearList = new Array();        // List of game gear icons
+var eEnergy = 0;                    // NPC energy level
 
 // Player variables
-var score = 0;          // Player score
-
+var score = 0;                      // Player score
+var pGearList = new Array();        // List of player gear icons
+var pEnergy = 0;                    // Player energy level
 
 
 
@@ -33,7 +39,7 @@ var y = 150;      // starting vertical position of ball
 var dx = 1;       // amount ball should move horizontally
 var dy = -3;      // amount ball should move vertically
 // variables set in init()
-var ctx, width, height, paddlex, bricks, brickWidth;
+var width, height, paddlex, bricks, brickWidth;
 var paddleh = 10; // paddle height (pixels)
 var paddlew = 75; // paddle width (pixels)
 var canvasMinX = 0; // minimum canvas x bounds
@@ -60,7 +66,7 @@ var direction = "right";
 //-------------------------
 // initialize game
 function init() {
-  width = 800;
+  width = 1000;
   height = 800;
   paddlex = width / 2;
   brickWidth = (width / ncols) - 1;
@@ -69,6 +75,9 @@ function init() {
   // run draw function every 10 milliseconds to give 
   // the illusion of movement
   init_bricks();
+  buildCity();
+  eGear();
+  pGear();
   start_animation();
 }
 
@@ -87,25 +96,109 @@ function reload() {
 // LANDSCAPE DRAWING FUNCTIONS
 //------------------------------
 function drawBG() {
-  CTX.fillStyle = BGColor;
+  CTX.fillStyle = BGCOLOR;
 }
 function drawGround() {
   CTX.fillStyle = "brown";
-  CTX.fillRect(0, 700, 800, 100);
+  CTX.fillRect(100, 700, 800, 100);
 }
 function drawSky() {
   CTX.fillStyle = "blue";
-  CTX.fillRect(0, 0, 800, 100);
+  CTX.fillRect(100, 0, 800, 150);
 }
 
+//------------------------------
+// GAMEPIECE DRAWING FUNCTIONS
+//------------------------------
 // Draw the NPC city
 function drawCity() {
-
+  CTX.fillStyle = "white";
+  for (i = 0; i < 10; i++) {
+    CTX.fillRect(cityList[i][0], cityList[i][1], cityList[i][2], cityList[i][3]);
+    CTX.strokeStyle = "black";
+    CTX.strokeRect(cityList[i][0], cityList[i][1], cityList[i][2], cityList[i][3]);
+  }
 }
-
 // Draw the NPC 
 function drawNPC() {
+  CTX.fillStyle = "red";
+  CTX.beginPath();
+  CTX.moveTo(eX, 675);
+  CTX.lineTo(eX + 50, 675);
+  CTX.lineTo(eX + 50, 655);
+  CTX.lineTo(eX + 30, 655);
+  CTX.lineTo(eX + 30, 640);
+  CTX.lineTo(eX + 20, 640);
+  CTX.lineTo(eX + 20, 655);
+  CTX.lineTo(eX, 655);
+  CTX.closePath();
+  CTX.fill();
+}
+function drawEGear() {
+  CTX.fillStyle = "black";
+  CTX.fillRect(0, 0, 100, 800);
+}
+function drawEGearIcon() {
+  for (i = 0; i < 10; i++) {
+    CTX.fillStyle = eGearList[i][4];
+    CTX.fillRect(eGearList[i][0], eGearList[i][1], eGearList[i][2], eGearList[i][3]);
+  }
+}
+function drawEEnergyBar() {
+  CTX.fillStyle = "gold";
+  CTX.fillRect(80, 795 - eEnergy, 15, eEnergy);
+}
 
+//------------------------------
+// PLAYER DRAWING FUNCTIONS
+//------------------------------
+function drawPGear() {
+  CTX.fillStyle = "black";
+  CTX.fillRect(900, 0, 100, 800);
+}
+function drawPGearIcon() {
+  for (i = 0; i < 10; i++) {
+    CTX.fillStyle = pGearList[i][4];
+    CTX.fillRect(pGearList[i][0], pGearList[i][1], pGearList[i][2], pGearList[i][3]);
+  }
+}
+function drawPEnergyBar() {
+  CTX.fillStyle = "gold";
+  CTX.fillRect(905, 795 - pEnergy, 15, pEnergy);
+}
+//------------------------------
+// LANDSCAPE BUILDING FUNCTIONS
+//------------------------------
+function buildCity() {
+  let rnd = 0;
+  let temp = [];
+  for (i = 0; i < 10; i++) {
+    rnd = Math.round(Math.random() * 90) + 10;       // Should generate a value 10 - 100
+    temp = [105 + 80 * i, 800 - rnd, 70, rnd];    // X pos, Y Pos, Width, Height
+    cityList[i] = temp;
+  }
+}
+
+//------------------------------
+// GAMEPIECE BUILDING FUNCTIONS
+//------------------------------
+function eGear() {
+  let temp = [];
+  for (i = 0; i < 10; i++) {
+    temp = [5, 80 * i + 5, 70, 70, "white"];
+    eGearList[i] = temp;
+  }
+}
+
+//------------------------------
+// PLAYER BUILDING FUNCTIONS
+//------------------------------
+function pGear() {
+  let temp = [];
+  for (i = 0; i < 10; i++) {
+    temp = [925, 80 * i + 5, 70, 70, "white"];
+    pGearList[i] = temp;
+  }
 }
 
 // used to draw the ball
@@ -229,6 +322,7 @@ function drawPlayer() {
   CTX.fillStyle = "blue";
   CTX.fillRect(300 + next, 400, 60, 60);
 
+
   for (let i = 370; i < 650; i += 70) {
     CTX.beginPath();
     CTX.fillStyle = "green";
@@ -242,6 +336,51 @@ function draw() {
   clear();
   drawGround();
   drawSky();
+  drawCity();
+  drawNPC();
+  drawEGear();
+  drawEGearIcon();
+  drawEEnergyBar();
+  drawPGear();
+  drawPGearIcon();
+  drawPEnergyBar();
+
+  // Enemy base movement
+  if (eX <= 105) {
+    edX = 1;
+  } else if (eX >= 845) {
+    edX = -1;
+  }
+  eX = eX + edX;
+
+  // Enemy energy growth
+  if (eEnergy < 791) {
+    eEnergy += 1;
+  }
+
+  // Player energy growth
+  if (pEnergy < 791) {
+    pEnergy += 1;
+  }
+
+  // Check enemy energy level
+  for (let i = 0; i < 10; i++) {
+    if (eEnergy <= GEARLEVELLIST[i]) {
+      break;
+    } else {
+      eGearList[9 - i][4] = "gold";
+    }
+  }
+
+  // Check player energy level
+  for (let i = 0; i < 10; i++) {
+    if (pEnergy <= GEARLEVELLIST[i]) {
+      break;
+    } else {
+      pGearList[9 - i][4] = "gold";
+    }
+  }
+
   CTX.fillStyle = ballcolor;
   //draw the ball
   circle(x, y, ballRadius);
