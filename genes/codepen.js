@@ -18,78 +18,89 @@ const GEARLEVELLIST = [70, 150, 230, 310, 390, 470, 550, 630, 710, 790];
 
 // Game variables
 var eLevel = 0;                     // NPC level
+
+var cityList = new Array();      // List of buildings in the city
+var eGearList = new Array();      // List of game gear icons
+var eBulletList = new Array();      // List of enemy bullets
+var eShieldList = new Array();      // List of enemy shields
+
 var eShielded = false;              // NPC shield is built
 var eX = 500;                       // NPC x position
 var edX = -1;                        // NPC movement direction
 var eOut = false;                   // NPC knocked out (start new level if player alive)
 var paused = true;                  // Is the game paused (initially, yes)
-var cityList = new Array();         // List of buildings in the city
-var eGearList = new Array();        // List of game gear icons
 var eEnergy = 0;                    // NPC energy level
 
 // Player variables
 var score = 0;                      // Player score
-var pGearList = new Array();        // List of player gear icons
+
+var pGearList = new Array();      // List of player gear icons
+var pPlayerList = new Array();      // List of players
+var pBulletList = new Array();      // List of player bullets
+
 var pEnergy = 0;                    // Player energy level
-
-
-
-var x = 200;      // starting horizontal position of ball
-var y = 150;      // starting vertical position of ball
-var dx = 1;       // amount ball should move horizontally
-var dy = -3;      // amount ball should move vertically
-// variables set in init()
-var width, height, paddlex, bricks, brickWidth;
-var paddleh = 10; // paddle height (pixels)
-var paddlew = 75; // paddle width (pixels)
-var canvasMinX = 0; // minimum canvas x bounds
-var canvasMaxX = 0; // maximum canvas x bounds
-var intervalId = 0; // track refresh rate for calling draw()
-var nrows = 6; // number of rows of bricks
-var ncols = 8; // number of columns of bricks
-var brickHeight = 15; // height of each brick
-var padding = 1;  // how far apart bricks are spaced
-
-var ballRadius = 10; // size of ball (pixels)
-// change colors of bricks -- add as many colors as you like
-var brick_colors = ["burlywood", "chocolate", "firebrick", "midnightblue"];
-var paddlecolor = "black";
-var ballcolor = "black";
-
-
-var next = 20;
-var direction = "right";
-
+var pdX = 1;                        // Player speed
+var pERate = 0.1;                   // Rate at which player gun is recharged
+var pSRate = 0.05;                  // Rate at which player shield is recharged
 
 //-------------------------
 // FUNCTION DECLARATIONS
 //-------------------------
-// initialize game
-function init() {
-  width = 1000;
-  height = 800;
-  paddlex = width / 2;
-  brickWidth = (width / ncols) - 1;
-  canvasMinX = 0;
-  canvasMaxX = canvasMinX + width;
-  // run draw function every 10 milliseconds to give 
-  // the illusion of movement
-  init_bricks();
-  buildCity();
-  eGear();
-  pGear();
-  start_animation();
+//------------------------------
+// LANDSCAPE BUILDING FUNCTIONS
+//------------------------------
+function buildCity() {
+  for (let i = 0; i < 10; i++) {
+    let rnd = Math.round(Math.random() * 90) + 10;       // Should generate a value 10 - 100
+    let temp = [105 + 80 * i, 800 - rnd, 70, rnd];    // X pos, Y Pos, Width, Height
+    cityList[i] = temp;
+  }
 }
 
-function reload() {
-  stop_animation(); // clear out the animation - it's cause the ball to speed up
-  x = 200;      // starting horizontal position of ball
-  y = 150;      // starting vertical position of ball
-  dx = 1;       // amount ball should move horizontally
-  dy = -3;      // amount ball should move vertically
-  score = 0;
-  next = 0;
-  init();
+//------------------------------
+// GAMEPIECE BUILDING FUNCTIONS
+//------------------------------
+function buildEGear() {
+  for (let i = 0; i < 10; i++) {
+    let temp = [5, 80 * i + 5, 70, 70, "white"];
+    eGearList[i] = temp;
+  }
+}
+function bullet(entity, x, y) {
+  if (entity == "e") {
+    let temp = [x, y, 10, 20, "grey"];
+    eBulletList.push(temp);
+  } else {
+    let temp = [x, y, 10, 20, "brown"];
+    pBulletList.push(temp);
+  }
+}
+
+//------------------------------
+// PLAYER BUILDING FUNCTIONS
+//------------------------------
+function buildPGear() {
+  for (let i = 0; i < 10; i++) {
+    let temp = [925, 80 * i + 5, 70, 70, "white"];
+    pGearList[i] = temp;
+  }
+}
+function buildPlayerList() {
+  // Start at the bottom and build up
+  // [x pos, y pos, width, heigt, color, is special, energy, shield]
+  for (let r = 0; r < 4; r++) {
+    var temp = [];
+    for (let c = 0; c < 4; c++) {
+      temp.push([110 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green", 0, 100, 100]);
+    }
+    for (let c = 0; c < 2; c++) {
+      temp.push([350 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "blue", 1, 100, 100]);
+    }
+    for (let c = 0; c < 4; c++) {
+      temp.push([470 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green", 0, 100, 100]);
+    }
+    pPlayerList[r] = temp;
+  }
 }
 
 //------------------------------
@@ -113,7 +124,7 @@ function drawSky() {
 // Draw the NPC city
 function drawCity() {
   CTX.fillStyle = "white";
-  for (i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     CTX.fillRect(cityList[i][0], cityList[i][1], cityList[i][2], cityList[i][3]);
     CTX.strokeStyle = "black";
     CTX.strokeRect(cityList[i][0], cityList[i][1], cityList[i][2], cityList[i][3]);
@@ -139,7 +150,7 @@ function drawEGear() {
   CTX.fillRect(0, 0, 100, 800);
 }
 function drawEGearIcon() {
-  for (i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     CTX.fillStyle = eGearList[i][4];
     CTX.fillRect(eGearList[i][0], eGearList[i][1], eGearList[i][2], eGearList[i][3]);
   }
@@ -147,6 +158,20 @@ function drawEGearIcon() {
 function drawEEnergyBar() {
   CTX.fillStyle = "gold";
   CTX.fillRect(80, 795 - eEnergy, 15, eEnergy);
+}
+function drawBullets() {
+  if (eBulletList != []) {
+    for (let i = 0; i < eBulletList.length; i++) {
+      CTX.fillStyle = eBulletList[i][4];
+      CTX.fillRect(eBulletList[i][0], eBulletList[i][1], eBulletList[i][2], eBulletList[i][3]);
+    }
+  }
+  if (pBulletList != []) {
+    for (let i = 0; i < pBulletList.length; i++) {
+      CTX.fillStyle = pBulletList[i][4];
+      CTX.fillRect(pBulletList[i][0], pBulletList[i][1], pBulletList[i][2], pBulletList[i][3]);
+    }
+  }
 }
 
 //------------------------------
@@ -157,49 +182,51 @@ function drawPGear() {
   CTX.fillRect(900, 0, 100, 800);
 }
 function drawPGearIcon() {
-  for (i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     CTX.fillStyle = pGearList[i][4];
     CTX.fillRect(pGearList[i][0], pGearList[i][1], pGearList[i][2], pGearList[i][3]);
+    CTX.fillStyle = "black";
+    CTX.font = "24px Arial";
+    if (i == 0) {
+      CTX.fillText(i.toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
+    } else {
+      CTX.fillText((10 - i).toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
+    }
   }
 }
 function drawPEnergyBar() {
   CTX.fillStyle = "gold";
   CTX.fillRect(905, 795 - pEnergy, 15, pEnergy);
 }
-//------------------------------
-// LANDSCAPE BUILDING FUNCTIONS
-//------------------------------
-function buildCity() {
-  let rnd = 0;
-  let temp = [];
-  for (i = 0; i < 10; i++) {
-    rnd = Math.round(Math.random() * 90) + 10;       // Should generate a value 10 - 100
-    temp = [105 + 80 * i, 800 - rnd, 70, rnd];    // X pos, Y Pos, Width, Height
-    cityList[i] = temp;
+function drawPlayer() {
+  for (let pr = 0; pr < 4; pr++) {
+    for (let pc = 0; pc < 10; pc++) {
+      CTX.fillStyle = pPlayerList[pr][pc][4];
+      CTX.fillRect(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1], pPlayerList[pr][pc][2], pPlayerList[pr][pc][3]);
+      drawPlayerEnergy(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1], pPlayerList[pr][pc][6]);
+      drawPlayerShieldEnergy(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1], pPlayerList[pr][pc][7]);
+      drawPlayerShield(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1]);
+    }
   }
+}
+function drawPlayerEnergy(x, y, e) {
+  eH = 100 - e;
+  CTX.fillStyle = "gold";
+  CTX.fillRect(x, y + eH / 2, 5, e / 2);
+}
+function drawPlayerShieldEnergy(x, y, e) {
+  eH = 100 - e;
+  CTX.fillStyle = "purple";
+  CTX.fillRect(x + 45, y + eH / 2, 5, e / 2);
+}
+function drawPlayerShield(x, y) {
+  CTX.fillStyle = "white";
+  CTX.fillRect(x, y + 50, 50, 5);
 }
 
-//------------------------------
-// GAMEPIECE BUILDING FUNCTIONS
-//------------------------------
-function eGear() {
-  let temp = [];
-  for (i = 0; i < 10; i++) {
-    temp = [5, 80 * i + 5, 70, 70, "white"];
-    eGearList[i] = temp;
-  }
-}
 
-//------------------------------
-// PLAYER BUILDING FUNCTIONS
-//------------------------------
-function pGear() {
-  let temp = [];
-  for (i = 0; i < 10; i++) {
-    temp = [925, 80 * i + 5, 70, 70, "white"];
-    pGearList[i] = temp;
-  }
-}
+
+
 
 // used to draw the ball
 function circle(x, y, r) {
@@ -233,9 +260,66 @@ function onMouseMove(evt) {
   }
 }
 
-function onKeyPress(evt) {
+function onKeyDown(evt) {
   evt.preventDefault();
-  pause();
+  switch (event.key) {
+    // Create a normal player bullet :: bottom row ONLY
+    case "a":
+      if (pPlayerList[0][0][6] > 0) {
+        bullet("p", pPlayerList[0][0][0] + 25, 450);
+        pPlayerList[0][0][6] = pPlayerList[0][0][6] - 10;
+      }
+      break;
+    case "s":
+      if (pPlayerList[0][1][6] > 0) {
+        bullet("p", pPlayerList[0][1][0] + 25, 450);
+        pPlayerList[0][1][6] = pPlayerList[0][1][6] - 10;
+      }
+      break;
+    case "d":
+      if (pPlayerList[0][2][6] > 0) {
+        bullet("p", pPlayerList[0][2][0] + 25, 450);
+        pPlayerList[0][2][6] = pPlayerList[0][2][6] - 10;
+      }
+      break;
+    case "f":
+      if (pPlayerList[0][3][6] > 0) {
+        bullet("p", pPlayerList[0][3][0] + 25, 450);
+        pPlayerList[0][3][6] = pPlayerList[0][3][6] - 10;
+      }
+      break;
+    case "j":
+      if (pPlayerList[0][6][6] > 0) {
+        bullet("p", pPlayerList[0][6][0] + 25, 450);
+        pPlayerList[0][6][6] = pPlayerList[0][6][6] - 10;
+      }
+      break;
+    case "k":
+      if (pPlayerList[0][7][6] > 0) {
+        bullet("p", pPlayerList[0][7][0] + 25, 450);
+        pPlayerList[0][7][6] = pPlayerList[0][7][6] - 10;
+      }
+      break;
+    case "l":
+      if (pPlayerList[0][8][6] > 0) {
+        bullet("p", pPlayerList[0][8][0] + 25, 450);
+        pPlayerList[0][8][6] = pPlayerList[0][8][6] - 10;
+      }
+      break;
+    case ";":
+      if (pPlayerList[0][9][6] > 0) {
+        bullet("p", pPlayerList[0][9][0] + 25, 450);
+        pPlayerList[0][9][6] = pPlayerList[0][9][6] - 10;
+      }
+      break;
+    default:
+    // code block
+  }
+  //if (event.key = "a") {
+  //bullet("e",eX + 25,620);
+  //bullet("p",pPlayerList[0][0][0] + 25,450);
+  //}
+  //pause();
 }
 
 function pause() {
@@ -311,23 +395,62 @@ function drawWall() {
   }
 }
 
-function drawPlayer() {
-  for (let i = 20; i < 300; i += 70) {
-    CTX.beginPath();
-    CTX.fillStyle = "green";
-    CTX.fillRect(i + next, 400, 60, 60);
-  }
-
-  CTX.beginPath();
-  CTX.fillStyle = "blue";
-  CTX.fillRect(300 + next, 400, 60, 60);
 
 
-  for (let i = 370; i < 650; i += 70) {
-    CTX.beginPath();
-    CTX.fillStyle = "green";
-    CTX.fillRect(i + next, 400, 60, 60);
-  }
+var x = 200;      // starting horizontal position of ball
+var y = 150;      // starting vertical position of ball
+var dx = 1;       // amount ball should move horizontally
+var dy = -3;      // amount ball should move vertically
+// variables set in init()
+var width, height, paddlex, bricks, brickWidth;
+var paddleh = 10; // paddle height (pixels)
+var paddlew = 75; // paddle width (pixels)
+var canvasMinX = 0; // minimum canvas x bounds
+var canvasMaxX = 0; // maximum canvas x bounds
+var intervalId = 0; // track refresh rate for calling draw()
+var nrows = 6; // number of rows of bricks
+var ncols = 8; // number of columns of bricks
+var brickHeight = 15; // height of each brick
+var padding = 1;  // how far apart bricks are spaced
+var paused = false; // keeps track of whether the game is paused (true) or not (false)
+var ballRadius = 10; // size of ball (pixels)
+// change colors of bricks -- add as many colors as you like
+var brick_colors = ["burlywood", "chocolate", "firebrick", "midnightblue"];
+var paddlecolor = "black";
+var ballcolor = "black";
+
+
+var next = 20;
+var direction = "right";
+
+// initialize game
+function init() {
+  width = 1000;
+  height = 800;
+  paddlex = width / 2;
+  brickWidth = (width / ncols) - 1;
+  canvasMinX = 0;
+  canvasMaxX = canvasMinX + width;
+  // run draw function every 10 milliseconds to give 
+  // the illusion of movement
+  init_bricks();
+  buildCity();
+  buildEGear();
+  buildPGear();
+  buildPlayerList();
+  start_animation();
+  bullet("e", eX, 620);
+}
+
+function reload() {
+  stop_animation(); // clear out the animation - it's cause the ball to speed up
+  x = 200;      // starting horizontal position of ball
+  y = 150;      // starting vertical position of ball
+  dx = 1;       // amount ball should move horizontally
+  dy = -3;      // amount ball should move vertically
+  score = 0;
+  next = 0;
+  init();
 }
 
 function draw() {
@@ -344,6 +467,8 @@ function draw() {
   drawPGear();
   drawPGearIcon();
   drawPEnergyBar();
+  drawPlayer();
+  drawBullets();
 
   // Enemy base movement
   if (eX <= 105) {
@@ -381,6 +506,38 @@ function draw() {
     }
   }
 
+  // Move the player
+  for (let r = 0; r < 4; r++) {
+    if (pPlayerList[0][9][0] > 850) {
+      pdX = -1;
+    }
+    if (pPlayerList[0][0][0] < 110) {
+      pdX = 1;
+    }
+    for (let c = 0; c < 10; c++) {
+      pPlayerList[r][c][0] += pdX;
+
+      // Power up the player
+      if (pPlayerList[r][c][6] < 100) {
+        pPlayerList[r][c][6] += pERate;
+      }
+    }
+  }
+
+  // Make the gun fire
+  // Let's just make it move first
+  if (eBulletList.length > 0) {
+    for (let i = 0; i < eBulletList.length; i++) {
+      eBulletList[i][1] = eBulletList[i][1] - 2;
+    }
+  }
+  if (pBulletList.length > 0) {
+    for (let i = 0; i < pBulletList.length; i++) {
+      pBulletList[i][1] = pBulletList[i][1] + 2;
+    }
+  }
+
+
   CTX.fillStyle = ballcolor;
   //draw the ball
   circle(x, y, ballRadius);
@@ -389,7 +546,7 @@ function draw() {
   rect(paddlex, height - paddleh, paddlew, paddleh);
   draw_bricks();
   drawWall();
-  drawPlayer(next);
+
 
   //check if we have hit a brick
   rowheight = brickHeight + padding;
@@ -472,7 +629,17 @@ function stop_animation() {
 
 //-------------------------
 // MAIN EXECUTION
+// (CALLING FUNCTIONS)
 //-------------------------
-//$(document).mousemove(onMouseMove); // register the mouse move function
-//$(document).keypress(onKeyPress);   // register onKeyPress function
-init(); // initialize & begin game
+// main functionality begins here
+// what should happen when the user moves the mouse?
+theGame = document.getElementById("myCanvas");
+//document.mousemove(onMouseMove); // register the mouse move function
+//document.keypress(onKeyPress);   // register onKeyPress function
+theGame.addEventListener('keydown', function (event) {
+  onKeyDown(event);
+}, false);
+theGame.addEventListener('mousemove', function (event) {
+  onMouseMove(event);
+}, false);
+init();                             // initialize & begin game
