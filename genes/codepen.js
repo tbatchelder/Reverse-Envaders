@@ -14,22 +14,31 @@ const BGCOLOR = "#75f075";
 
 // Game constants
 // List of when each gear item becomes available (both)
-const GEARLEVELLIST = [70, 150, 230, 310, 390, 470, 550, 630, 710, 790];
+//const GEARLEVELLIST = [70, 150, 230, 310, 390, 470, 550, 630, 710, 790];
+const GEARLEVELLIST = [790, 710, 630, 550, 470, 390, 310, 230, 150, 70];
 
 // Game variables
-var eLevel = 0;                     // NPC level
-
-var cityList = new Array();      // List of buildings in the city
-var eGearList = new Array();      // List of game gear icons
-var eBulletList = new Array();      // List of enemy bullets
-var eShieldList = new Array();      // List of enemy shields
-
-var eShielded = false;              // NPC shield is built
-var eX = 500;                       // NPC x position
-var edX = -1;                        // NPC movement direction
-var eOut = false;                   // NPC knocked out (start new level if player alive)
 var paused = true;                  // Is the game paused (initially, yes)
-var eEnergy = 0;                    // NPC energy level
+
+// Enemy variables
+var eCityList = new Array();  // List of buildings in the city
+var eGearList = new Array();  // List of NPC gear icons
+var eBulletList = new Array();  // List of NPC bullets
+var eShieldList = new Array();      // List of NPC shields
+var eShieldListLvl1 = new Array();  // List of NPC shields on the first level
+var eShieldListLvl2 = new Array();  // List of NPC shields on the second level
+var eShieldListLvl3 = new Array();  // List of NPC shields on the third level
+var eShieldListLvl4 = new Array();  // List of NPC shields on the fourth level
+var eShieldListLvl5 = new Array();  // List of NPC shields on the fifth level
+
+var eX = 500;                      // NPC x start position
+var edX = 0;                        // NPC movement direction
+
+var eGearEnergy = 0;            // NPC energy level
+var eGearEnergyRate = 1;            // Rate NPC builds up gear energy
+var eShielded = false;        // Is the NPC shield up
+
+var eOut = false;                 // NPC has been stunned and can't do anything
 
 // Player variables
 var score = 0;                      // Player score
@@ -37,11 +46,14 @@ var score = 0;                      // Player score
 var pGearList = new Array();      // List of player gear icons
 var pPlayerList = new Array();      // List of players
 var pBulletList = new Array();      // List of player bullets
+var pShieldList = new Array();      // List of player shields
 
 var pEnergy = 0;                    // Player energy level
-var pdX = 1;                        // Player speed
 var pERate = 0.1;                   // Rate at which player gun is recharged
 var pSRate = 0.05;                  // Rate at which player shield is recharged
+
+var pdX = 1;                        // Player speed
+
 
 //-------------------------
 // FUNCTION DECLARATIONS
@@ -49,30 +61,44 @@ var pSRate = 0.05;                  // Rate at which player shield is recharged
 //------------------------------
 // LANDSCAPE BUILDING FUNCTIONS
 //------------------------------
-function buildCity() {
-  for (let i = 0; i < 10; i++) {
-    let rnd = Math.round(Math.random() * 90) + 10;       // Should generate a value 10 - 100
-    let temp = [105 + 80 * i, 800 - rnd, 70, rnd];    // X pos, Y Pos, Width, Height
-    cityList[i] = temp;
-  }
-}
 
 //------------------------------
 // GAMEPIECE BUILDING FUNCTIONS
 //------------------------------
+function bullet(entity, x, y, t) {
+  if (entity == "e") {
+    switch (t) {
+      case 0:
+        temp = [x, y, 10, 20, "grey"];
+        break;
+    }
+    eBulletList.push(temp);
+  } else {
+    switch (t) {
+      case 0:
+        temp = [x, y, 10, 20, "brown"];
+        break;
+    }
+    pBulletList.push(temp);
+  }
+}
+
+//------------------------------
+// NPCPIECE BUILDING FUNCTIONS
+//------------------------------
 function buildEGear() {
   for (let i = 0; i < 10; i++) {
-    let temp = [5, 80 * i + 5, 70, 70, "white"];
+    let temp = [5, 720 - 80 * i + 5, 70, 70, "white"];
     eGearList[i] = temp;
   }
 }
-function bullet(entity, x, y) {
-  if (entity == "e") {
-    let temp = [x, y, 10, 20, "grey"];
-    eBulletList.push(temp);
-  } else {
-    let temp = [x, y, 10, 20, "brown"];
-    pBulletList.push(temp);
+function buildCity() {
+  for (let i = 0; i < 10; i++) {
+    // Should generate a value 1 - 10
+    let rnd = Math.round(Math.random() * 9) + 1;
+    // X pos, Y Pos, Width, Height, building level (1 - 10)
+    let temp = [105 + 80 * i, 800 - rnd * 10, 70, rnd * 10, rnd];
+    eCityList[i] = temp;
   }
 }
 
@@ -81,13 +107,13 @@ function bullet(entity, x, y) {
 //------------------------------
 function buildPGear() {
   for (let i = 0; i < 10; i++) {
-    let temp = [925, 80 * i + 5, 70, 70, "white"];
+    let temp = [925, 720 - 80 * i + 5, 70, 70, "white"];
     pGearList[i] = temp;
   }
 }
 function buildPlayerList() {
   // Start at the bottom and build up
-  // [x pos, y pos, width, heigt, color, is special, energy, shield]
+  // [x pos, y pos, width, heigt, color, special type, energy, shield energy]
   for (let r = 0; r < 4; r++) {
     var temp = [];
     for (let c = 0; c < 4; c++) {
@@ -111,7 +137,7 @@ function drawBG() {
 }
 function drawGround() {
   CTX.fillStyle = "brown";
-  CTX.fillRect(100, 700, 800, 100);
+  CTX.fillRect(100, 690, 800, 110);
 }
 function drawSky() {
   CTX.fillStyle = "blue";
@@ -121,43 +147,13 @@ function drawSky() {
 //------------------------------
 // GAMEPIECE DRAWING FUNCTIONS
 //------------------------------
-// Draw the NPC city
-function drawCity() {
-  CTX.fillStyle = "white";
-  for (let i = 0; i < 10; i++) {
-    CTX.fillRect(cityList[i][0], cityList[i][1], cityList[i][2], cityList[i][3]);
-    CTX.strokeStyle = "black";
-    CTX.strokeRect(cityList[i][0], cityList[i][1], cityList[i][2], cityList[i][3]);
-  }
-}
-// Draw the NPC 
-function drawNPC() {
-  CTX.fillStyle = "red";
-  CTX.beginPath();
-  CTX.moveTo(eX, 675);
-  CTX.lineTo(eX + 50, 675);
-  CTX.lineTo(eX + 50, 655);
-  CTX.lineTo(eX + 30, 655);
-  CTX.lineTo(eX + 30, 640);
-  CTX.lineTo(eX + 20, 640);
-  CTX.lineTo(eX + 20, 655);
-  CTX.lineTo(eX, 655);
-  CTX.closePath();
-  CTX.fill();
-}
 function drawEGear() {
   CTX.fillStyle = "black";
   CTX.fillRect(0, 0, 100, 800);
 }
-function drawEGearIcon() {
-  for (let i = 0; i < 10; i++) {
-    CTX.fillStyle = eGearList[i][4];
-    CTX.fillRect(eGearList[i][0], eGearList[i][1], eGearList[i][2], eGearList[i][3]);
-  }
-}
-function drawEEnergyBar() {
-  CTX.fillStyle = "gold";
-  CTX.fillRect(80, 795 - eEnergy, 15, eEnergy);
+function drawPGear() {
+  CTX.fillStyle = "black";
+  CTX.fillRect(900, 0, 100, 800);
 }
 function drawBullets() {
   if (eBulletList != []) {
@@ -175,12 +171,46 @@ function drawBullets() {
 }
 
 //------------------------------
+// NPCPIECE DRAWING FUNCTIONS
+//------------------------------
+// Draw the NPC city
+function drawCity() {
+  CTX.fillStyle = "white";
+  for (let i = 0; i < 10; i++) {
+    CTX.fillRect(eCityList[i][0], eCityList[i][1], eCityList[i][2], eCityList[i][3]);
+    CTX.strokeStyle = "black";
+    CTX.strokeRect(eCityList[i][0], eCityList[i][1], eCityList[i][2], eCityList[i][3]);
+  }
+}
+// Draw the NPC 
+function drawNPC() {
+  CTX.fillStyle = "red";
+  CTX.beginPath();
+  CTX.moveTo(eX, 675);
+  CTX.lineTo(eX + 50, 675);
+  CTX.lineTo(eX + 50, 655);
+  CTX.lineTo(eX + 30, 655);
+  CTX.lineTo(eX + 30, 640);
+  CTX.lineTo(eX + 20, 640);
+  CTX.lineTo(eX + 20, 655);
+  CTX.lineTo(eX, 655);
+  CTX.closePath();
+  CTX.fill();
+}
+function drawEGearIcon() {
+  for (let i = 0; i < 10; i++) {
+    CTX.fillStyle = eGearList[i][4];
+    CTX.fillRect(eGearList[i][0], eGearList[i][1], eGearList[i][2], eGearList[i][3]);
+  }
+}
+function drawEEnergyBar() {
+  CTX.fillStyle = "gold";
+  CTX.fillRect(80, 795 - eGearEnergy, 15, eGearEnergy);
+}
+
+//------------------------------
 // PLAYER DRAWING FUNCTIONS
 //------------------------------
-function drawPGear() {
-  CTX.fillStyle = "black";
-  CTX.fillRect(900, 0, 100, 800);
-}
 function drawPGearIcon() {
   for (let i = 0; i < 10; i++) {
     CTX.fillStyle = pGearList[i][4];
@@ -190,7 +220,7 @@ function drawPGearIcon() {
     if (i == 0) {
       CTX.fillText(i.toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
     } else {
-      CTX.fillText((10 - i).toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
+      CTX.fillText(i.toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
     }
   }
 }
@@ -266,49 +296,49 @@ function onKeyDown(evt) {
     // Create a normal player bullet :: bottom row ONLY
     case "a":
       if (pPlayerList[0][0][6] > 0) {
-        bullet("p", pPlayerList[0][0][0] + 25, 450);
+        bullet("p", pPlayerList[0][0][0] + 25, 450, pPlayerList[0][0][5]);
         pPlayerList[0][0][6] = pPlayerList[0][0][6] - 10;
       }
       break;
     case "s":
       if (pPlayerList[0][1][6] > 0) {
-        bullet("p", pPlayerList[0][1][0] + 25, 450);
+        bullet("p", pPlayerList[0][1][0] + 25, 450, pPlayerList[0][1][5]);
         pPlayerList[0][1][6] = pPlayerList[0][1][6] - 10;
       }
       break;
     case "d":
       if (pPlayerList[0][2][6] > 0) {
-        bullet("p", pPlayerList[0][2][0] + 25, 450);
+        bullet("p", pPlayerList[0][2][0] + 25, 450, pPlayerList[0][2][5]);
         pPlayerList[0][2][6] = pPlayerList[0][2][6] - 10;
       }
       break;
     case "f":
       if (pPlayerList[0][3][6] > 0) {
-        bullet("p", pPlayerList[0][3][0] + 25, 450);
+        bullet("p", pPlayerList[0][3][0] + 25, 450, pPlayerList[0][3][5]);
         pPlayerList[0][3][6] = pPlayerList[0][3][6] - 10;
       }
       break;
     case "j":
       if (pPlayerList[0][6][6] > 0) {
-        bullet("p", pPlayerList[0][6][0] + 25, 450);
+        bullet("p", pPlayerList[0][6][0] + 25, 450, pPlayerList[0][6][5]);
         pPlayerList[0][6][6] = pPlayerList[0][6][6] - 10;
       }
       break;
     case "k":
       if (pPlayerList[0][7][6] > 0) {
-        bullet("p", pPlayerList[0][7][0] + 25, 450);
+        bullet("p", pPlayerList[0][7][0] + 25, 450, pPlayerList[0][7][5]);
         pPlayerList[0][7][6] = pPlayerList[0][7][6] - 10;
       }
       break;
     case "l":
       if (pPlayerList[0][8][6] > 0) {
-        bullet("p", pPlayerList[0][8][0] + 25, 450);
+        bullet("p", pPlayerList[0][8][0] + 25, 450, pPlayerList[0][8][5]);
         pPlayerList[0][8][6] = pPlayerList[0][8][6] - 10;
       }
       break;
     case ";":
       if (pPlayerList[0][9][6] > 0) {
-        bullet("p", pPlayerList[0][9][0] + 25, 450);
+        bullet("p", pPlayerList[0][9][0] + 25, 450, pPlayerList[0][9][5]);
         pPlayerList[0][9][6] = pPlayerList[0][9][6] - 10;
       }
       break;
@@ -479,8 +509,8 @@ function draw() {
   eX = eX + edX;
 
   // Enemy energy growth
-  if (eEnergy < 791) {
-    eEnergy += 1;
+  if (eGearEnergy < 791) {
+    eGearEnergy += eGearEnergyRate;
   }
 
   // Player energy growth
@@ -490,19 +520,19 @@ function draw() {
 
   // Check enemy energy level
   for (let i = 0; i < 10; i++) {
-    if (eEnergy <= GEARLEVELLIST[i]) {
+    if ((865 - eGearEnergy) > GEARLEVELLIST[i]) {
       break;
     } else {
-      eGearList[9 - i][4] = "gold";
+      eGearList[i][4] = "gold";
     }
   }
 
   // Check player energy level
   for (let i = 0; i < 10; i++) {
-    if (pEnergy <= GEARLEVELLIST[i]) {
+    if ((865 - pEnergy) > GEARLEVELLIST[i]) {
       break;
     } else {
-      pGearList[9 - i][4] = "gold";
+      pGearList[i][4] = "gold";
     }
   }
 
