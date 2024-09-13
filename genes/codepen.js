@@ -14,8 +14,11 @@ const BGCOLOR = "#75f075";
 
 // Game constants
 // List of when each gear item becomes available (both)
-//const GEARLEVELLIST = [70, 150, 230, 310, 390, 470, 550, 630, 710, 790];
 const GEARLEVELLIST = [790, 710, 630, 550, 470, 390, 310, 230, 150, 70];
+// List of y position for each NPC shield row
+const NPCSHIELDLIST = [580, 560, 540, 520, 500];
+// List of NPC shield colors based on level
+const NPCSHIELDCOLOR = ["red", "orange", "yellow", "green", "blue", "purple"];
 
 // Game variables
 var paused = true;                  // Is the game paused (initially, yes)
@@ -24,12 +27,7 @@ var paused = true;                  // Is the game paused (initially, yes)
 var eCityList = new Array();  // List of buildings in the city
 var eGearList = new Array();  // List of NPC gear icons
 var eBulletList = new Array();  // List of NPC bullets
-var eShieldList = new Array();      // List of NPC shields
-var eShieldListLvl1 = new Array();  // List of NPC shields on the first level
-var eShieldListLvl2 = new Array();  // List of NPC shields on the second level
-var eShieldListLvl3 = new Array();  // List of NPC shields on the third level
-var eShieldListLvl4 = new Array();  // List of NPC shields on the fourth level
-var eShieldListLvl5 = new Array();  // List of NPC shields on the fifth level
+var eShieldList = new Array();  // List of NPC shields
 
 var eX = 500;                      // NPC x start position
 var edX = 0;                        // NPC movement direction
@@ -37,6 +35,7 @@ var edX = 0;                        // NPC movement direction
 var eGearEnergy = 0;            // NPC energy level
 var eGearEnergyRate = 1;            // Rate NPC builds up gear energy
 var eShielded = false;        // Is the NPC shield up
+var eShieldLevel = 0;            // The shield level current obtained
 
 var eOut = false;                 // NPC has been stunned and can't do anything
 
@@ -86,13 +85,13 @@ function bullet(entity, x, y, t) {
 //------------------------------
 // NPCPIECE BUILDING FUNCTIONS
 //------------------------------
-function buildEGear() {
+function buildEGearList() {
   for (let i = 0; i < 10; i++) {
     let temp = [5, 720 - 80 * i + 5, 70, 70, "white"];
     eGearList[i] = temp;
   }
 }
-function buildCity() {
+function buildECityList() {
   for (let i = 0; i < 10; i++) {
     // Should generate a value 1 - 10
     let rnd = Math.round(Math.random() * 9) + 1;
@@ -101,17 +100,91 @@ function buildCity() {
     eCityList[i] = temp;
   }
 }
+function buildEShieldList(r, l) {
+  let r1 = 4;
+  let l1 = 36;
+  // Determine the color of the row
+  // Every 30 levels, the # of rows impacted needs to be reset so it stays between 0 - 5
+  let levelAdjustment = Math.floor(l1 / 30);
+  let numRowsImpacted = Math.floor((l1 - 30 * levelAdjustment) / 5);
+  // To get the right color, it needs to use the original level value adjusted down by 5
+  let rowColorNumber = 0;  // It also can't be negative (rounds to -1)
+  if (l1 > 4) {
+    rowColorNumber = Math.floor(Math.floor((l1 - 5) / 5) / 5);
+  }
+  // Once found, the color needs to be kept within the list 0 - 5
+  if (rowColorNumber > 5) {
+    rowColorNumber = 5;
+  }
+  sColor = NPCSHIELDCOLOR[rowColorNumber];
+  // Determine indent from left side based on the row created
+  let row = 0;
+  let direction = 1;
+  while (row < (r1 + 1)) {
+    switch (row) {
+      case 0:
+      case 2:
+      case 4:
+        x = 110;
+        break;
+      case 1:
+      case 3:
+        x = 150;
+        break;
+    }
+    y = NPCSHIELDLIST[row];
+    // Build the final list
+    let tempRow = [];
+    for (let c = 0; c < 15; c++) {
+      // x, y, width, height, color, direction (1=right, -1=left)
+      let temp = [x + c * 50, y, 40, 20, sColor, direction];
+      // Check for a better level
+      if (numRowsImpacted > 0) {
+        temp[4] = NPCSHIELDCOLOR[rowColorNumber + 1];
+      }
+      tempRow.push(temp);
+    }
+    eShieldList.push(tempRow);
+    // Once a row is done and pushed, lower the row impacted count and change the direction
+    numRowsImpacted -= 1;
+    direction = direction * -1;
+    row++;
+  }
+}
+function drawWall() {
+  for (let r = 0; r < eShieldList.length; r++) {
+    // Get the direction to move each row
+    for (let c = 0; c < 15; c++) {
+      CTX.fillStyle = eShieldList[r][c][4];
+      // Move the x position of each shield by the direction value
+      eShieldList[r][c][0] = eShieldList[r][c][0] + eShieldList[r][0][5];
+      // Check if the shield hit the wall and bounce it back
+      if ((eShieldList[r][c][5] == 1) && (eShieldList[r][14][0] == 855)) {
+        eShieldList[r][c][5] = eShieldList[r][c][5] * -1;
+      }
+      if ((eShieldList[r][c][5] == -1) && (eShieldList[r][0][0] == 105)) {
+        eShieldList[r][c][5] = eShieldList[r][c][5] * -1;
+      }
+      CTX.fillRect(eShieldList[r][c][0], eShieldList[r][c][1], eShieldList[r][c][2], eShieldList[r][c][3]);
+
+      // the outline rectangle
+      CTX.strokeStyle = "blue";
+      CTX.lineWidth = 1;
+      CTX.strokeRect(eShieldList[r][c][0], eShieldList[r][c][1], 40, 20);
+    }
+  }
+}
 
 //------------------------------
 // PLAYER BUILDING FUNCTIONS
 //------------------------------
-function buildPGear() {
+function buildPGearList() {
   for (let i = 0; i < 10; i++) {
     let temp = [925, 720 - 80 * i + 5, 70, 70, "white"];
     pGearList[i] = temp;
   }
 }
-function buildPlayerList() {
+function buildPList() {
   // Start at the bottom and build up
   // [x pos, y pos, width, heigt, color, special type, energy, shield energy]
   for (let r = 0; r < 4; r++) {
@@ -126,6 +199,12 @@ function buildPlayerList() {
       temp.push([470 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green", 0, 100, 100]);
     }
     pPlayerList[r] = temp;
+  }
+}
+function buildPShieldList() {
+  let temp = [[], [], [], [], [], [], [], [], [], []];
+  for (t = 0; t < 4; t++) {
+    pShieldList.push(temp);
   }
 }
 
@@ -217,11 +296,7 @@ function drawPGearIcon() {
     CTX.fillRect(pGearList[i][0], pGearList[i][1], pGearList[i][2], pGearList[i][3]);
     CTX.fillStyle = "black";
     CTX.font = "24px Arial";
-    if (i == 0) {
-      CTX.fillText(i.toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
-    } else {
-      CTX.fillText(i.toString(), pGearList[i][0] + 46, pGearList[i][1] + 24);
-    }
+    CTX.fillText(i.toString(), pGearList[i][0] + 54, pGearList[i][1] + 20);
   }
 }
 function drawPEnergyBar() {
@@ -318,6 +393,18 @@ function onKeyDown(evt) {
         pPlayerList[0][3][6] = pPlayerList[0][3][6] - 10;
       }
       break;
+    case "g":
+      if (pPlayerList[0][4][6] > 0) {
+        bullet("p", pPlayerList[0][4][0] + 25, 450, pPlayerList[0][4][5]);
+        pPlayerList[0][4][6] = pPlayerList[0][4][6] - 10;
+      }
+      break;
+    case "h":
+      if (pPlayerList[0][5][6] > 0) {
+        bullet("p", pPlayerList[0][5][0] + 25, 450, pPlayerList[0][5][5]);
+        pPlayerList[0][5][6] = pPlayerList[0][5][6] - 10;
+      }
+      break;
     case "j":
       if (pPlayerList[0][6][6] > 0) {
         bullet("p", pPlayerList[0][6][0] + 25, 450, pPlayerList[0][6][5]);
@@ -394,36 +481,7 @@ function draw_bricks() {
   }
 }
 
-function drawWall() {
-  let pushMe = true;
-  for (let j = 500; j < 600; j += 20) {
-    CTX.beginPath();
-    if (pushMe) {
-      for (let i = 40; i < 760; i += 40) {
-        CTX.fillStyle = "red";
-        CTX.fillRect(i, j, 30, 20);
 
-        // the outline rectangle
-        CTX.strokeStyle = "blue";
-        CTX.lineWidth = 1;
-        CTX.strokeRect(i, j, 30, 20)
-      }
-      pushMe = false;
-    } else {
-      for (let i = 60; i < 760; i += 40) {
-        pushMe = true;
-        // the filled rectangle
-        CTX.fillStyle = "red";
-        CTX.fillRect(i, j, 30, 20);
-
-        // the outline rectangle
-        CTX.strokeStyle = "blue";
-        CTX.lineWidth = 1;
-        CTX.strokeRect(i, j, 30, 20)
-      }
-    }
-  }
-}
 
 
 
@@ -464,12 +522,15 @@ function init() {
   // run draw function every 10 milliseconds to give 
   // the illusion of movement
   init_bricks();
-  buildCity();
-  buildEGear();
-  buildPGear();
-  buildPlayerList();
+  buildECityList();
+  buildEGearList();
+  buildEShieldList(4, 0);
+  buildPGearList();
+  buildPList();
+  buildPShieldList();
+
   start_animation();
-  bullet("e", eX, 620);
+  //bullet("e",eX,620);
 }
 
 function reload() {
