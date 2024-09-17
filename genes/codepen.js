@@ -2,56 +2,73 @@
 // Author: Timothy Batchelder
 
 //-------------------------
-// GLOBAL VARIABLES
+// VARIABLES INITIALIZATION
 //-------------------------
+// Global container for variables and objects
+let g = [];   
+
 // Canvas constants
-const CTX = document.getElementById("myCanvas").getContext("2d");
-const CANVASMINX = 0;
-const CANVASMINY = 0;
-const CANVASMAXX = 1000;
-const CANVASMAXY = 800;
-const BGCOLOR = "#75f075";
+g.CTX        = document.getElementById("myCanvas").getContext("2d");
+g.CANVASMINX = 0;
+g.CANVASMINY = 0;
+g.CANVASMAXX = 1000;
+g.CANVASMAXY = 800;
 
 // Game constants
+g.const                = [];
+g.const.BGCOLOR        = "#75f075";
 // List of when each gear item becomes available (both)
-const GEARLEVELLIST = [790, 710, 630, 550, 470, 390, 310, 230, 150, 70];
+g.const.GEARLEVELLIST  = [790, 710, 630, 550, 470, 390, 310, 230, 150, 70];
 // List of y position for each NPC shield row
-const NPCSHIELDLIST = [580, 560, 540, 520, 500];
+g.const.NPCSHIELDLIST  = [580, 560, 540, 520, 500];
 // List of NPC shield colors based on level
-const NPCSHIELDCOLOR = ["red", "orange", "yellow", "green", "blue", "purple"];
+g.const.NPCSHIELDCOLOR = ["red", "orange", "yellow", "green", "blue", "purple"];
 
 // Game variables
-var paused = true;                  // Is the game paused (initially, yes)
+g.game              = [];
+g.game.paused       = true;          // Is the game paused (initially, yes)
 
 // Enemy variables
-var eCityList = new Array();  // List of buildings in the city
-var eGearList = new Array();  // List of NPC gear icons
-var eBulletList = new Array();  // List of NPC bullets
-var eShieldList = new Array();  // List of NPC shields
+g.e                 = [];
+g.e.list            = [];
+g.e.list.City       = [];           // List of buildings in the city
+g.e.list.Gear       = [];           // List of NPC gear icons
+g.e.list.Bullet     = [];           // List of NPC bullets
+g.e.list.Shield     = [];           // List of NPC shields
 
-var eX = 500;                      // NPC x start position
-var edX = 0;                        // NPC movement direction
+g.e.pos             = [];
+g.e.pos.X           = 500;          // NPC x start position
+g.e.pos.dX          = 0;            // NPC movement direction
 
-var eGearEnergy = 0;            // NPC energy level
-var eGearEnergyRate = 1;            // Rate NPC builds up gear energy
-var eShielded = false;        // Is the NPC shield up
-var eShieldLevel = 0;            // The shield level current obtained
+g.e.energy          = [];
+g.e.energy.Gear     = 0;            // NPC energy level
+g.e.energy.GearRate = 1;            // Rate NPC builds up gear energy
 
-var eOut = false;                 // NPC has been stunned and can't do anything
+g.e.def             = [];
+g.e.def.Shielded    = false;        // Is the NPC shield up
+g.e.def.ShieldLevel = 0;            // The shield level current obtained
+
+g.e.Out             = false;        // NPC has been stunned and can't do anything
 
 // Player variables
-var score = 0;                      // Player score
+g.p                 = [];
+g.p.score           = 0;            // Player score
 
-var pGearList = new Array();      // List of player gear icons
-var pPlayerList = new Array();      // List of players
-var pBulletList = new Array();      // List of player bullets
-var pShieldList = new Array();      // List of player shields
+g.p.pos             = [];
+g.p.pos.X           = 1;            // Player speed
 
-var pEnergy = 0;                    // Player energy level
-var pERate = 0.1;                   // Rate at which player gun is recharged
-var pSRate = 0.05;                  // Rate at which player shield is recharged
+g.p.list            = [];
+g.p.list.Gear       = [];           // List of player gear icons
+g.p.list.Player     = [];           // List of players
+g.p.list.Bullet     = [];           // List of player bullets
+g.p.list.Shield     = [];           // List of player shields
 
-var pdX = 1;                        // Player speed
+g.p.energy          = [];
+g.p.energy.Gear     = 0;            // Player energy level
+g.p.energy.Bullet   = 0.1;          // Rate at which player gun is recharged
+g.p.energy.Shield   = 0.05;         // Rate at which player shield is recharged
+
+
 
 
 //-------------------------
@@ -66,29 +83,29 @@ var pdX = 1;                        // Player speed
 //------------------------------
 function bullet(entity, x, y, t) {
   if (entity == "e") {
-    switch (t) {
+    switch(t) {
       case 0:
         temp = [x, y, 10, 20, "grey"];
         break;
     }
-    eBulletList.push(temp);
+    g.e.list.Bullet.push(temp);
   } else {
-    switch (t) {
+    switch(t) {
       case 0:
         temp = [x, y, 10, 20, "brown"];
         break;
     }
-    pBulletList.push(temp);
+    g.p.list.Bullet.push(temp);
   }
 }
 
 //------------------------------
-// NPCPIECE BUILDING FUNCTIONS
+// NPC PIECE BUILDING FUNCTIONS
 //------------------------------
 function buildEGearList() {
   for (let i = 0; i < 10; i++) {
     let temp = [5, 720 - 80 * i + 5, 70, 70, "white"];
-    eGearList[i] = temp;
+    g.e.list.Gear[i] = temp;
   }
 }
 function buildECityList() {
@@ -96,8 +113,8 @@ function buildECityList() {
     // Should generate a value 1 - 10
     let rnd = Math.round(Math.random() * 9) + 1;
     // X pos, Y Pos, Width, Height, building level (1 - 10)
-    let temp = [105 + 80 * i, 800 - rnd * 10, 70, rnd * 10, rnd];
-    eCityList[i] = temp;
+    let temp = [105 + 80 * i, 800 - rnd * 10, 70, rnd * 10, rnd];   
+    g.e.list.City[i] = temp;
   }
 }
 function buildEShieldList(r, l) {
@@ -116,23 +133,23 @@ function buildEShieldList(r, l) {
   if (rowColorNumber > 5) {
     rowColorNumber = 5;
   }
-  sColor = NPCSHIELDCOLOR[rowColorNumber];
+  sColor = g.const.NPCSHIELDCOLOR[rowColorNumber];
   // Determine indent from left side based on the row created
   let row = 0;
   let direction = 1;
   while (row < (r1 + 1)) {
-    switch (row) {
+    switch(row) {
       case 0:
       case 2:
       case 4:
-        x = 110;
+        x = 110; 
         break;
       case 1:
       case 3:
         x = 150;
         break;
     }
-    y = NPCSHIELDLIST[row];
+    y = g.const.NPCSHIELDLIST[row];
     // Build the final list
     let tempRow = [];
     for (let c = 0; c < 15; c++) {
@@ -140,11 +157,11 @@ function buildEShieldList(r, l) {
       let temp = [x + c * 50, y, 40, 20, sColor, direction];
       // Check for a better level
       if (numRowsImpacted > 0) {
-        temp[4] = NPCSHIELDCOLOR[rowColorNumber + 1];
+        temp[4] = g.const.NPCSHIELDCOLOR[rowColorNumber + 1];
       }
       tempRow.push(temp);
     }
-    eShieldList.push(tempRow);
+    g.e.list.Shield.push(tempRow);
     // Once a row is done and pushed, lower the row impacted count and change the direction
     numRowsImpacted -= 1;
     direction = direction * -1;
@@ -152,25 +169,25 @@ function buildEShieldList(r, l) {
   }
 }
 function drawWall() {
-  for (let r = 0; r < eShieldList.length; r++) {
+  for (let r = 0; r < g.e.list.Shield.length;  r++) {
     // Get the direction to move each row
     for (let c = 0; c < 15; c++) {
-      CTX.fillStyle = eShieldList[r][c][4];
+      g.CTX.fillStyle = g.e.list.Shield [r][c][4];
       // Move the x position of each shield by the direction value
-      eShieldList[r][c][0] = eShieldList[r][c][0] + eShieldList[r][0][5];
+      g.e.list.Shield [r][c][0] = g.e.list.Shield [r][c][0] + g.e.list.Shield[r][0][5];
       // Check if the shield hit the wall and bounce it back
-      if ((eShieldList[r][c][5] == 1) && (eShieldList[r][14][0] == 855)) {
-        eShieldList[r][c][5] = eShieldList[r][c][5] * -1;
+      if ( (g.e.list.Shield[r][c][5] == 1) && (g.e.list.Shield[r][14][0] == 855) ) {
+        g.e.list.Shield[r][c][5] = g.e.list.Shield[r][c][5] * -1;
       }
-      if ((eShieldList[r][c][5] == -1) && (eShieldList[r][0][0] == 105)) {
-        eShieldList[r][c][5] = eShieldList[r][c][5] * -1;
+      if ( (g.e.list.Shield[r][c][5] == -1) && (g.e.list.Shield[r][0][0] == 105) ) {
+        g.e.list.Shield[r][c][5] = g.e.list.Shield[r][c][5] * -1;
       }
-      CTX.fillRect(eShieldList[r][c][0], eShieldList[r][c][1], eShieldList[r][c][2], eShieldList[r][c][3]);
-
+      g.CTX.fillRect(g.e.list.Shield[r][c][0], g.e.list.Shield[r][c][1], g.e.list.Shield[r][c][2], g.e.list.Shield[r][c][3]);
+      
       // the outline rectangle
-      CTX.strokeStyle = "blue";
-      CTX.lineWidth = 1;
-      CTX.strokeRect(eShieldList[r][c][0], eShieldList[r][c][1], 40, 20);
+      g.CTX.strokeStyle = "blue";
+      g.CTX.lineWidth = 1;
+      g.CTX.strokeRect(g.e.list.Shield[r][c][0], g.e.list.Shield[r][c][1], 40, 20);
     }
   }
 }
@@ -181,7 +198,7 @@ function drawWall() {
 function buildPGearList() {
   for (let i = 0; i < 10; i++) {
     let temp = [925, 720 - 80 * i + 5, 70, 70, "white"];
-    pGearList[i] = temp;
+    g.p.list.Gear[i] = temp;
   }
 }
 function buildPList() {
@@ -190,21 +207,21 @@ function buildPList() {
   for (let r = 0; r < 4; r++) {
     var temp = [];
     for (let c = 0; c < 4; c++) {
-      temp.push([110 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green", 0, 100, 100]);
+      temp.push([110 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green",0,100,100]);
     }
     for (let c = 0; c < 2; c++) {
-      temp.push([350 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "blue", 1, 100, 100]);
+      temp.push([350 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "blue",1,100,100]);
     }
     for (let c = 0; c < 4; c++) {
-      temp.push([470 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green", 0, 100, 100]);
+      temp.push([470 + 10 * c + 50 * c, 400 - 60 * r, 50, 50, "green",0,100,100]);
     }
-    pPlayerList[r] = temp;
+    g.p.list.Player[r] = temp;
   }
 }
 function buildPShieldList() {
-  let temp = [[], [], [], [], [], [], [], [], [], []];
+  let temp = [[],[],[],[],[],[],[],[],[],[]];
   for (t = 0; t < 4; t++) {
-    pShieldList.push(temp);
+    g.p.list.Shield.push(temp);
   }
 }
 
@@ -212,40 +229,40 @@ function buildPShieldList() {
 // LANDSCAPE DRAWING FUNCTIONS
 //------------------------------
 function drawBG() {
-  CTX.fillStyle = BGCOLOR;
-  CTX.fillRect(0, 0, 1000, 800);
+  g.CTX.fillStyle = g.const.BGCOLOR;
+  g.CTX.fillRect(0, 0, 1000, 800);
 }
 function drawGround() {
-  CTX.fillStyle = "brown";
-  CTX.fillRect(100, 690, 800, 110);
+  g.CTX.fillStyle = "brown";
+  g.CTX.fillRect(100, 690, 800, 110);
 }
 function drawSky() {
-  CTX.fillStyle = "blue";
-  CTX.fillRect(100, 0, 800, 150);
+  g.CTX.fillStyle = "blue";
+  g.CTX.fillRect(100, 0, 800, 150);
 }
 
 //------------------------------
 // GAMEPIECE DRAWING FUNCTIONS
 //------------------------------
 function drawEGear() {
-  CTX.fillStyle = "black";
-  CTX.fillRect(0, 0, 100, 800);
+  g.CTX.fillStyle = "black";
+  g.CTX.fillRect(0, 0, 100, 800);
 }
 function drawPGear() {
-  CTX.fillStyle = "black";
-  CTX.fillRect(900, 0, 100, 800);
+  g.CTX.fillStyle = "black";
+  g.CTX.fillRect(900, 0, 100, 800);
 }
 function drawBullets() {
-  if (eBulletList != []) {
-    for (let i = 0; i < eBulletList.length; i++) {
-      CTX.fillStyle = eBulletList[i][4];
-      CTX.fillRect(eBulletList[i][0], eBulletList[i][1], eBulletList[i][2], eBulletList[i][3]);
+  if (g.e.list.Bullet != []) {
+    for (let i = 0; i < g.e.list.Bullet.length; i++) {
+      g.CTX.fillStyle = g.e.list.Bullet[i][4];
+      g.CTX.fillRect(g.e.list.Bullet[i][0],g.e.list.Bullet[i][1],g.e.list.Bullet[i][2],g.e.list.Bullet[i][3]);
     }
   }
-  if (pBulletList != []) {
-    for (let i = 0; i < pBulletList.length; i++) {
-      CTX.fillStyle = pBulletList[i][4];
-      CTX.fillRect(pBulletList[i][0], pBulletList[i][1], pBulletList[i][2], pBulletList[i][3]);
+  if (g.p.list.Bullet != []) {
+    for (let i = 0; i < g.p.list.Bullet.length; i++) {
+      g.CTX.fillStyle = g.p.list.Bullet [i][4];
+      g.CTX.fillRect(g.p.list.Bullet [i][0], g.p.list.Bullet [i][1], g.p.list.Bullet [i][2], g.p.list.Bullet [i][3]);
     }
   }
 }
@@ -255,37 +272,37 @@ function drawBullets() {
 //------------------------------
 // Draw the NPC city
 function drawCity() {
-  CTX.fillStyle = "white";
+  g.CTX.fillStyle = "white";
   for (let i = 0; i < 10; i++) {
-    CTX.fillRect(eCityList[i][0], eCityList[i][1], eCityList[i][2], eCityList[i][3]);
-    CTX.strokeStyle = "black";
-    CTX.strokeRect(eCityList[i][0], eCityList[i][1], eCityList[i][2], eCityList[i][3]);
+    g.CTX.fillRect(g.e.list.City[i][0], g.e.list.City[i][1], g.e.list.City[i][2], g.e.list.City[i][3]);
+    g.CTX.strokeStyle = "black";
+    g.CTX.strokeRect(g.e.list.City[i][0], g.e.list.City[i][1], g.e.list.City[i][2], g.e.list.City[i][3]);
   }
 }
 // Draw the NPC 
 function drawNPC() {
-  CTX.fillStyle = "red";
-  CTX.beginPath();
-  CTX.moveTo(eX, 675);
-  CTX.lineTo(eX + 50, 675);
-  CTX.lineTo(eX + 50, 655);
-  CTX.lineTo(eX + 30, 655);
-  CTX.lineTo(eX + 30, 640);
-  CTX.lineTo(eX + 20, 640);
-  CTX.lineTo(eX + 20, 655);
-  CTX.lineTo(eX, 655);
-  CTX.closePath();
-  CTX.fill();
+  g.CTX.fillStyle = "red";
+  g.CTX.beginPath();
+  g.CTX.moveTo(g.e.pos.X, 675);
+  g.CTX.lineTo(g.e.pos.X + 50, 675);
+  g.CTX.lineTo(g.e.pos.X + 50, 655);
+  g.CTX.lineTo(g.e.pos.X + 30, 655);
+  g.CTX.lineTo(g.e.pos.X + 30, 640);
+  g.CTX.lineTo(g.e.pos.X + 20, 640);
+  g.CTX.lineTo(g.e.pos.X + 20, 655);
+  g.CTX.lineTo(g.e.pos.X, 655);
+  g.CTX.closePath();
+  g.CTX.fill();
 }
 function drawEGearIcon() {
   for (let i = 0; i < 10; i++) {
-    CTX.fillStyle = eGearList[i][4];
-    CTX.fillRect(eGearList[i][0], eGearList[i][1], eGearList[i][2], eGearList[i][3]);
+    g.CTX.fillStyle = g.e.list.Gear[i][4];
+    g.CTX.fillRect(g.e.list.Gear[i][0], g.e.list.Gear[i][1], g.e.list.Gear[i][2], g.e.list.Gear[i][3]);
   }
 }
 function drawEEnergyBar() {
-  CTX.fillStyle = "gold";
-  CTX.fillRect(80, 795 - eGearEnergy, 15, eGearEnergy);
+  g.CTX.fillStyle = "gold";
+  g.CTX.fillRect(80, 795 - g.e.energy.Gear, 15, g.e.energy.Gear);
 }
 
 //------------------------------
@@ -293,42 +310,256 @@ function drawEEnergyBar() {
 //------------------------------
 function drawPGearIcon() {
   for (let i = 0; i < 10; i++) {
-    CTX.fillStyle = pGearList[i][4];
-    CTX.fillRect(pGearList[i][0], pGearList[i][1], pGearList[i][2], pGearList[i][3]);
-    CTX.fillStyle = "black";
-    CTX.font = "24px Arial";
-    CTX.fillText(i.toString(), pGearList[i][0] + 54, pGearList[i][1] + 20);
+    g.CTX.fillStyle = g.p.list.Gear[i][4];
+    g.CTX.fillRect(g.p.list.Gear[i][0], g.p.list.Gear[i][1], g.p.list.Gear[i][2], g.p.list.Gear[i][3]);
+    g.CTX.fillStyle = "black";
+    g.CTX.font = "24px Arial";
+    g.CTX.fillText(i.toString(), g.p.list.Gear[i][0] + 54, g.p.list.Gear[i][1]+20);
   }
 }
 function drawPEnergyBar() {
-  CTX.fillStyle = "gold";
-  CTX.fillRect(905, 795 - pEnergy, 15, pEnergy);
+  g.CTX.fillStyle = "gold";
+  g.CTX.fillRect(905, 795 - g.p.energy.Gear, 15, g.p.energy.Gear);
 }
 function drawPlayer() {
-  for (let pr = 0; pr < 4; pr++) {
+  for (let pr = 0; pr < 4; pr ++) {
     for (let pc = 0; pc < 10; pc++) {
-      CTX.fillStyle = pPlayerList[pr][pc][4];
-      CTX.fillRect(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1], pPlayerList[pr][pc][2], pPlayerList[pr][pc][3]);
-      drawPlayerEnergy(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1], pPlayerList[pr][pc][6]);
-      drawPlayerShieldEnergy(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1], pPlayerList[pr][pc][7]);
-      drawPlayerShield(pPlayerList[pr][pc][0], pPlayerList[pr][pc][1]);
+      g.CTX.fillStyle = g.p.list.Player[pr][pc][4];
+      g.CTX.fillRect(g.p.list.Player[pr][pc][0], g.p.list.Player[pr][pc][1], g.p.list.Player[pr][pc][2], g.p.list.Player[pr][pc][3]);
+      drawPlayerEnergy(g.p.list.Player[pr][pc][0], g.p.list.Player[pr][pc][1],g.p.list.Player[pr][pc][6]);
+      drawPlayerShieldEnergy(g.p.list.Player[pr][pc][0], g.p.list.Player[pr][pc][1],g.p.list.Player[pr][pc][7]);
+      drawPlayerShield(g.p.list.Player[pr][pc][0], g.p.list.Player[pr][pc][1]);
     }
   }
 }
-function drawPlayerEnergy(x, y, e) {
+function drawPlayerEnergy(x,y,e) {
   eH = 100 - e;
-  CTX.fillStyle = "gold";
-  CTX.fillRect(x, y + eH / 2, 5, e / 2);
+  g.CTX.fillStyle = "gold";
+  g.CTX.fillRect(x,y + eH / 2,5,e / 2);
 }
-function drawPlayerShieldEnergy(x, y, e) {
+function drawPlayerShieldEnergy(x,y,e){
   eH = 100 - e;
-  CTX.fillStyle = "purple";
-  CTX.fillRect(x + 45, y + eH / 2, 5, e / 2);
+  g.CTX.fillStyle = "purple";
+  g.CTX.fillRect(x + 45,y + eH / 2,5,e / 2);
 }
-function drawPlayerShield(x, y) {
-  CTX.fillStyle = "white";
-  CTX.fillRect(x, y + 50, 50, 5);
+function drawPlayerShield(x,y) {
+  g.CTX.fillStyle = "white";
+  g.CTX.fillRect(x,y + 50,50,5);
 }
+
+
+
+// clear the screen in between drawing each animation
+function clear() {
+  g.CTX.clearRect(0, 0, width, height);
+}
+
+function onKeyDown(evt) {
+  evt.preventDefault();
+  switch(event.key) {
+    // Create a normal player bullet :: bottom row ONLY
+    case "a":
+      if (g.p.list.Player[0][0][6] > 10) {
+        bullet("p",g.p.list.Player[0][0][0] + 25,450,g.p.list.Player[0][0][5]);
+        g.p.list.Player[0][0][6] = g.p.list.Player[0][0][6] - 10;
+      }
+      break;
+    case "s":
+      if (g.p.list.Player[0][1][6] > 10) {
+        bullet("p",g.p.list.Player[0][1][0] + 25,450,g.p.list.Player[0][1][5]);
+        g.p.list.Player[0][1][6] = g.p.list.Player[0][1][6] - 10;
+      }
+      break;
+    case "d":
+      if (g.p.list.Player[0][2][6] > 10) {
+        bullet("p",g.p.list.Player[0][2][0] + 25,450,g.p.list.Player[0][2][5]);
+        g.p.list.Player[0][2][6] = g.p.list.Player[0][2][6] - 10;
+      }
+      break;
+    case "f":
+      if (g.p.list.Player[0][3][6] > 10) {
+        bullet("p",g.p.list.Player[0][3][0] + 25,450,g.p.list.Player[0][3][5]);
+        g.p.list.Player[0][3][6] = g.p.list.Player[0][3][6] - 10;
+      }
+      break;
+    case "g":
+      if (g.p.list.Player[0][4][6] > 10) {
+        bullet("p",g.p.list.Player[0][4][0] + 25,450,g.p.list.Player[0][4][5]);
+        g.p.list.Player[0][4][6] = g.p.list.Player[0][4][6] - 10;
+      }
+      break;
+    case "h":
+      if (g.p.list.Player[0][5][6] > 10) {
+        bullet("p",g.p.list.Player[0][5][0] + 25,450,g.p.list.Player[0][5][5]);
+        g.p.list.Player[0][5][6] = g.p.list.Player[0][5][6] - 10;
+      }
+      break;
+    case "j":
+      if (g.p.list.Player[0][6][6] > 10) {
+        bullet("p",g.p.list.Player[0][6][0] + 25,450,g.p.list.Player[0][6][5]);
+        g.p.list.Player[0][6][6] = g.p.list.Player[0][6][6] - 10;
+      }
+      break;
+    case "k":
+      if (g.p.list.Player[0][7][6] > 10) {
+        bullet("p",g.p.list.Player[0][7][0] + 25,450,g.p.list.Player[0][7][5]);
+        g.p.list.Player[0][7][6] = g.p.list.Player[0][7][6] - 10;
+      }
+      break;
+    case "l":
+      if (g.p.list.Player[0][8][6] > 10) {
+        bullet("p",g.p.list.Player[0][8][0] + 25,450,g.p.list.Player[0][8][5]);
+        g.p.list.Player[0][8][6] = g.p.list.Player[0][8][6] - 10;
+      }
+      break;
+    case ";":
+      if (g.p.list.Player[0][9][6] > 10) {
+        bullet("p",g.p.list.Player[0][9][0] + 25,450,g.p.list.Player[0][9][5]);
+        g.p.list.Player[0][9][6] = g.p.list.Player[0][9][6] - 10;
+      }
+      break;
+    default:
+      pause();
+  }
+}
+
+function pause() {
+  if (g.game.paused) { // if paused, begin animation again
+    start_animation();
+  } else { // if unpaused, clear the animation
+    stop_animation();
+  }
+  g.game.paused = !g.game.paused;
+}
+
+var width, height;
+var intervalId = 0; 
+
+// initialize game
+function init() {
+  width = 1000;
+  height = 800;
+  buildECityList();
+  buildEGearList();
+  buildEShieldList(4,0);
+  buildPGearList();
+  buildPList();
+  buildPShieldList();
+  
+  start_animation();
+}
+
+function reload() {
+  stop_animation(); // clear out the animation - it's cause the ball to speed up
+  init();
+}
+
+function draw() {
+  // before drawing, change the fill color
+  clear();
+  drawBG();
+  
+  drawGround();
+  drawSky();
+  drawCity();
+  drawNPC();
+  drawEGear();
+  drawEGearIcon();
+  drawEEnergyBar();
+  drawPGear();
+  drawPGearIcon();
+  drawPEnergyBar();
+  drawPlayer();
+  drawBullets();
+  
+  // Enemy base movement
+  if (g.e.pos.X <= 105) {
+    g.e.pos.dX = 1;
+  } else if (g.e.pos.X >= 845) {
+    g.e.pos.dX = -1;
+  }
+  g.e.pos.X = g.e.pos.X + g.e.pos.dX;
+
+  // Enemy energy growth
+  if (g.e.energy.Gear < 791) {
+    g.e.energy.Gear += g.e.energy.GearRate;
+  }
+
+  // Player energy growth
+  if (g.p.energy.Gear < 791) {
+    g.p.energy.Gear += 1;
+  }
+
+  // Check enemy energy level
+  for (let i = 0; i < 10; i++) {
+    if ((855 - g.e.energy.Gear) >= g.const.GEARLEVELLIST[i]) {
+      break;
+    } else {
+      g.e.list.Gear[i][4] = "gold";
+    }
+  }
+
+  // Check player energy level
+  for (let i = 0; i < 10; i++) {
+    if ((855 - g.p.energy.Gear) > g.const.GEARLEVELLIST[i]) {
+      break;
+    } else {
+      g.p.list.Gear[i][4] = "gold";
+    }
+  }
+
+  // Move the player
+  for (let r = 0; r < 4; r++) {
+      if (g.p.list.Player[0][9][0] > 845) {
+        g.p.pos.X = -1;
+      } 
+      if (g.p.list.Player[0][0][0] < 110) {
+        g.p.pos.X = 1;
+      }
+    for (let c = 0; c < 10; c++) {
+      g.p.list.Player[r][c][0] += g.p.pos.X;
+      
+      // Power up the player
+      if (g.p.list.Player[r][c][6] < 100) {
+        g.p.list.Player[r][c][6] += g.p.energy.Bullet;
+      }
+    }
+  }
+  
+  // Make the gun fire
+  // Let's just make it move first
+  if (g.e.list.Bullet.length > 0) {
+    for (let i = 0; i < g.e.list.Bullet.length; i++) {
+      g.e.list.Bullet[i][1] = g.e.list.Bullet[i][1] - 2;
+    }
+  }
+  if (g.p.list.Bullet.length > 0) {
+    for (let i = 0; i < g.p.list.Bullet.length; i++) {
+      g.p.list.Bullet [i][1] = g.p.list.Bullet [i][1] + 2;
+    }
+  }
+  drawWall();
+}
+
+function start_animation() {
+  intervalId = setInterval(draw, 10);
+  //update_score_text();
+}
+
+function stop_animation() {
+  clearInterval(intervalId);
+}
+
+//-------------------------
+// MAIN EXECUTION
+//-------------------------
+theGame = document.getElementById("myCanvas");
+theGame.addEventListener('keydown', function(event) {
+  onKeyDown(event);
+}, false);
+init();
+
+
 
 
 
@@ -351,135 +582,72 @@ function drawPlayerShield(x, y) {
 //}
 
 // clear the screen in between drawing each animation
-function clear() {
-  CTX.clearRect(0, 0, width, height);
+//function clear() {
+//  g.CTX.clearRect(0, 0, width, height);
   //rect(0, 0, width, height);
-}
+//}
 
 // What do to when the mouse moves within the canvas
 //function onMouseMove(evt) {
-// set the paddle position if the mouse position 
-// is within the borders of the canvas
-//if (evt.pageX > canvasMinX && evt.pageX < canvasMaxX) {
-//paddlex = Math.max(evt.pageX - canvasMinX - (paddlew / 2), 0);
-//paddlex = Math.min(width - paddlew, paddlex);
-//}
+  // set the paddle position if the mouse position 
+  // is within the borders of the canvas
+  //if (evt.pageX > g.CANVASMINX && evt.pageX < g.CANVASMAXX) {
+    //paddlex = Math.max(evt.pageX - g.CANVASMINX - (paddlew / 2), 0);
+    //paddlex = Math.min(width - paddlew, paddlex);
+  //}
 //}
 
-function onKeyDown(evt) {
-  evt.preventDefault();
-  switch (event.key) {
-    // Create a normal player bullet :: bottom row ONLY
-    case "a":
-      if (pPlayerList[0][0][6] > 0) {
-        bullet("p", pPlayerList[0][0][0] + 25, 450, pPlayerList[0][0][5]);
-        pPlayerList[0][0][6] = pPlayerList[0][0][6] - 10;
-      }
-      break;
-    case "s":
-      if (pPlayerList[0][1][6] > 0) {
-        bullet("p", pPlayerList[0][1][0] + 25, 450, pPlayerList[0][1][5]);
-        pPlayerList[0][1][6] = pPlayerList[0][1][6] - 10;
-      }
-      break;
-    case "d":
-      if (pPlayerList[0][2][6] > 0) {
-        bullet("p", pPlayerList[0][2][0] + 25, 450, pPlayerList[0][2][5]);
-        pPlayerList[0][2][6] = pPlayerList[0][2][6] - 10;
-      }
-      break;
-    case "f":
-      if (pPlayerList[0][3][6] > 0) {
-        bullet("p", pPlayerList[0][3][0] + 25, 450, pPlayerList[0][3][5]);
-        pPlayerList[0][3][6] = pPlayerList[0][3][6] - 10;
-      }
-      break;
-    case "g":
-      if (pPlayerList[0][4][6] > 0) {
-        bullet("p", pPlayerList[0][4][0] + 25, 450, pPlayerList[0][4][5]);
-        pPlayerList[0][4][6] = pPlayerList[0][4][6] - 10;
-      }
-      break;
-    case "h":
-      if (pPlayerList[0][5][6] > 0) {
-        bullet("p", pPlayerList[0][5][0] + 25, 450, pPlayerList[0][5][5]);
-        pPlayerList[0][5][6] = pPlayerList[0][5][6] - 10;
-      }
-      break;
-    case "j":
-      if (pPlayerList[0][6][6] > 0) {
-        bullet("p", pPlayerList[0][6][0] + 25, 450, pPlayerList[0][6][5]);
-        pPlayerList[0][6][6] = pPlayerList[0][6][6] - 10;
-      }
-      break;
-    case "k":
-      if (pPlayerList[0][7][6] > 0) {
-        bullet("p", pPlayerList[0][7][0] + 25, 450, pPlayerList[0][7][5]);
-        pPlayerList[0][7][6] = pPlayerList[0][7][6] - 10;
-      }
-      break;
-    case "l":
-      if (pPlayerList[0][8][6] > 0) {
-        bullet("p", pPlayerList[0][8][0] + 25, 450, pPlayerList[0][8][5]);
-        pPlayerList[0][8][6] = pPlayerList[0][8][6] - 10;
-      }
-      break;
-    case ";":
-      if (pPlayerList[0][9][6] > 0) {
-        bullet("p", pPlayerList[0][9][0] + 25, 450, pPlayerList[0][9][5]);
-        pPlayerList[0][9][6] = pPlayerList[0][9][6] - 10;
-      }
-      break;
-    default:
-    // code block
-  }
+//function onKeyDown(evt) {
+  //evt.preventDefault();
+  
+  //}
   //if (event.key = "a") {
-  //bullet("e",eX + 25,620);
-  //bullet("p",pPlayerList[0][0][0] + 25,450);
+    //bullet("e", g.e.pos.X + 25,620);
+    //bullet("p",g.p.list.Player[0][0][0] + 25,450);
   //}
   //pause();
-}
+//}
 
-function pause() {
-  if (paused) { // if paused, begin animation again
-    start_animation();
-  } else { // if unpaused, clear the animation
-    stop_animation();
-  }
-  paused = !paused;
-}
+//function pause() {
+  //if (g.game.paused) { // if paused, begin animation again
+    //start_animation();
+  //} else { // if unpaused, clear the animation
+    //stop_animation();
+  //}
+ // g.game.paused = !g.game.paused;
+//}
 
 // initialize array of bricks to be visible (true)
 //function init_bricks() {
-//bricks = new Array(nrows);
-//brickColor = new Array(nrows);
-//for (i = 0; i < nrows; i++) { // for each row of bricks
-//bricks[i] = new Array(ncols);
-//brickColor[i] = new Array(ncols);
-//for (j = 0; j < ncols; j++) { // for each column of bricks
-//bricks[i][j] = true;
-//brickColor[i][j] = "";
-//}
-//}
+  //bricks = new Array(nrows);
+  //brickColor = new Array(nrows);
+  //for (i = 0; i < nrows; i++) { // for each row of bricks
+    //bricks[i] = new Array(ncols);
+    //brickColor[i] = new Array(ncols);
+    //for (j = 0; j < ncols; j++) { // for each column of bricks
+      //bricks[i][j] = true;
+      //brickColor[i][j] = "";
+    //}
+  //}
 //}
 
 // render the bricks
 //function draw_bricks() {
-//for (i = 0; i < nrows; i++) { // for each row of bricks
-//for (j = 0; j < ncols; j++) { // for each column of bricks
-// set the colors to alternate through
-// all colors in brick_colors array
-// modulus (%, aka remainder) ensures the colors
-// rotate through the whole range of brick_colors
-//CTX.fillStyle = brick_colors[(i + j) % brick_colors.length];
-//brickColor[i][j] = brick_colors[(i + j) % brick_colors.length];
-//if (bricks[i][j]) {
-//rect((j * (brickWidth + padding)) + padding,
-//(i * (brickHeight + padding)) + padding,
-//brickWidth, brickHeight);
-//}
-//}
-//}
+  //for (i = 0; i < nrows; i++) { // for each row of bricks
+    //for (j = 0; j < ncols; j++) { // for each column of bricks
+      // set the colors to alternate through
+      // all colors in brick_colors array
+      // modulus (%, aka remainder) ensures the colors
+      // rotate through the whole range of brick_colors
+      //CTX.fillStyle = brick_colors[(i + j) % brick_colors.length];
+      //brickColor[i][j] = brick_colors[(i + j) % brick_colors.length];
+      //if (bricks[i][j]) {
+        //rect((j * (brickWidth + padding)) + padding,
+          //(i * (brickHeight + padding)) + padding,
+          //brickWidth, brickHeight);
+      //}
+    //}
+  //}
 //}
 
 
@@ -491,17 +659,17 @@ function pause() {
 //var dx = 1;       // amount ball should move horizontally
 //var dy = -3;      // amount ball should move vertically
 // variables set in init()
-var width, height;//, paddlex, bricks, brickWidth;
+//var width, height;//, paddlex, bricks, brickWidth;
 //var paddleh = 10; // paddle height (pixels)
 //var paddlew = 75; // paddle width (pixels)
-var canvasMinX = 0; // minimum canvas x bounds
-var canvasMaxX = 0; // maximum canvas x bounds
-var intervalId = 0; // track refresh rate for calling draw()
+//var g.CANVASMINX = 0; // minimum canvas x bounds
+//var g.CANVASMAXX = 0; // maximum canvas x bounds
+//var intervalId = 0; // track refresh rate for calling draw()
 //var nrows = 6; // number of rows of bricks
 //var ncols = 8; // number of columns of bricks
 //var brickHeight = 15; // height of each brick
 //var padding = 1;  // how far apart bricks are spaced
-var paused = false; // keeps track of whether the game is paused (true) or not (false)
+//var paused = false; // keeps track of whether the game is paused (true) or not (false)
 //var ballRadius = 10; // size of ball (pixels)
 // change colors of bricks -- add as many colors as you like
 //var brick_colors = ["burlywood", "chocolate", "firebrick", "midnightblue"];
@@ -513,124 +681,43 @@ var paused = false; // keeps track of whether the game is paused (true) or not (
 //var direction = "right";
 
 // initialize game
-function init() {
-  width = 1000;
-  height = 800;
+//function init() {
+  //width = 1000;
+  //height = 800;
   //paddlex = width / 2;
   //brickWidth = (width / ncols) - 1;
-  //canvasMinX = 0;
-  //canvasMaxX = canvasMinX + width;
+  //g.CANVASMINX = 0;
+  //g.CANVASMAXX = g.CANVASMINX + width;
   // run draw function every 10 milliseconds to give 
   // the illusion of movement
   //init_bricks();
-  buildECityList();
-  buildEGearList();
-  buildEShieldList(4, 0);
-  buildPGearList();
-  buildPList();
-  buildPShieldList();
-
-  start_animation();
+  //buildECityList();
+  //buildEGearList();
+  //buildEShieldList(4,0);
+  //buildPGearList();
+  //buildPList();
+  //buildPShieldList();
+  
+  //start_animation();
   //bullet("e",eX,620);
-}
+//}
 
-function reload() {
-  stop_animation(); // clear out the animation - it's cause the ball to speed up
+//function reload() {
+  //stop_animation(); // clear out the animation - it's cause the ball to speed up
   //x = 200;      // starting horizontal position of ball
   //y = 150;      // starting vertical position of ball
   //dx = 1;       // amount ball should move horizontally
   //dy = -3;      // amount ball should move vertically
   //score = 0;
   //next = 0;
-  init();
-}
+  //init();
+//}
 
-function draw() {
+//function draw() {
   // before drawing, change the fill color
-  clear();
-  drawBG();
-
-  drawGround();
-  drawSky();
-  drawCity();
-  drawNPC();
-  drawEGear();
-  drawEGearIcon();
-  drawEEnergyBar();
-  drawPGear();
-  drawPGearIcon();
-  drawPEnergyBar();
-  drawPlayer();
-  drawBullets();
-
-  // Enemy base movement
-  if (eX <= 105) {
-    edX = 1;
-  } else if (eX >= 845) {
-    edX = -1;
-  }
-  eX = eX + edX;
-
-  // Enemy energy growth
-  if (eGearEnergy < 791) {
-    eGearEnergy += eGearEnergyRate;
-  }
-
-  // Player energy growth
-  if (pEnergy < 791) {
-    pEnergy += 1;
-  }
-
-  // Check enemy energy level
-  for (let i = 0; i < 10; i++) {
-    if ((855 - eGearEnergy) >= GEARLEVELLIST[i]) {
-      break;
-    } else {
-      eGearList[i][4] = "gold";
-    }
-  }
-
-  // Check player energy level
-  for (let i = 0; i < 10; i++) {
-    if ((855 - pEnergy) > GEARLEVELLIST[i]) {
-      break;
-    } else {
-      pGearList[i][4] = "gold";
-    }
-  }
-
-  // Move the player
-  for (let r = 0; r < 4; r++) {
-    if (pPlayerList[0][9][0] > 850) {
-      pdX = -1;
-    }
-    if (pPlayerList[0][0][0] < 110) {
-      pdX = 1;
-    }
-    for (let c = 0; c < 10; c++) {
-      pPlayerList[r][c][0] += pdX;
-
-      // Power up the player
-      if (pPlayerList[r][c][6] < 100) {
-        pPlayerList[r][c][6] += pERate;
-      }
-    }
-  }
-
-  // Make the gun fire
-  // Let's just make it move first
-  if (eBulletList.length > 0) {
-    for (let i = 0; i < eBulletList.length; i++) {
-      eBulletList[i][1] = eBulletList[i][1] - 2;
-    }
-  }
-  if (pBulletList.length > 0) {
-    for (let i = 0; i < pBulletList.length; i++) {
-      pBulletList[i][1] = pBulletList[i][1] + 2;
-    }
-  }
-
-
+  //clear();
+  //drawBG();
+  
   //CTX.fillStyle = ballcolor;
   //draw the ball
   //circle(x, y, ballRadius);
@@ -638,8 +725,6 @@ function draw() {
   //draw the paddle
   //rect(paddlex, height - paddleh, paddlew, paddleh);
   //draw_bricks();
-  drawWall();
-
 
   //check if we have hit a brick
   //rowheight = brickHeight + padding;
@@ -648,77 +733,77 @@ function draw() {
   //col = Math.floor(x / colwidth);
   //if so reverse the ball and mark the brick as broken
   //if (y < nrows * rowheight && row >= 0 && col >= 0 && bricks[row][col]) {
-  //dy = -dy;
-  //bricks[row][col] = false;
-  //"burlywood", "chocolate", "firebrick", "midnightblue"
-  //switch (brickColor[row][col]) {
-  //case "burlywood":
-  //score = score + 10;
-  //break;
-  //case "chocolate":
-  //score = score + 20;
-  //break;
-  //case "firebrick":
-  //score = score + 5;
-  //break;
-  //case "midnightblue":
-  //score = score + 1;
-  //break;
-  //default:
-  // code block
-  //}
-  //score = score + 1;
-  //update_score_text();
+    //dy = -dy;
+    //bricks[row][col] = false;
+    //"burlywood", "chocolate", "firebrick", "midnightblue"
+    //switch (brickColor[row][col]) {
+      //case "burlywood":
+        //score = score + 10;
+        //break;
+      //case "chocolate":
+        //score = score + 20;
+        //break;
+      //case "firebrick":
+        //score = score + 5;
+        //break;
+      //case "midnightblue":
+        //score = score + 1;
+        //break;
+      //default:
+      // code block
+    //}
+    //score = score + 1;
+    //update_score_text();
   //}
 
   //contain the ball by rebouding it off the walls of the canvas
   //if (x + dx > width || x + dx < 0)
-  //dx = -dx;
+    //dx = -dx;
 
   //if (y + dy < 0) {
-  //dy = -dy;
+    //dy = -dy;
   //} else if (y + dy > height - paddleh) {
-  // check if the ball is hitting the 
-  // paddle and if it is rebound it
-  //if (x > paddlex && x < paddlex + paddlew) {
-  //dy = -dy;
-  //}
+    // check if the ball is hitting the 
+    // paddle and if it is rebound it
+    //if (x > paddlex && x < paddlex + paddlew) {
+      //dy = -dy;
+    //}
   //}
   //if (y + dy > height) {
-  //game over, so stop the animation
-  //stop_animation();
+    //game over, so stop the animation
+    //stop_animation();
   //}
   //x += dx;
   //y += dy;
   //if (next > 20) {
-  //direction = "left";
+    //direction = "left";
   //}
   //if (next < 0) {
-  //direction = "right";
+    //direction = "right";
   //}
   //if (direction = "right") {
-  //next += 2;
+    //next += 2;
   //} else {
-  //next = next - 2;
+    //next = next - 2;
   //}
-}
-
-//function update_score_text() {
-// You can send data to your HTML
-// just like setting styles in CSS
-// Put <div id="score"></div> in
-// your HTML for thjis text to display
-//$('#score').text("Score: " + score);
 //}
 
-function start_animation() {
-  intervalId = setInterval(draw, 10);
-  //update_score_text();
-}
+//function update_score_text() {
+  // You can send data to your HTML
+  // just like setting styles in CSS
+  // Put <div id="score"></div> in
+  // your HTML for thjis text to display
+  //$('#score').text("Score: " + score);
+//}
 
-function stop_animation() {
-  clearInterval(intervalId);
-}
+//function start_animation() {
+  //intervalId = setInterval(draw, 10);
+  //update_score_text();
+//}
+
+//function stop_animation() {
+  //clearInterval(intervalId);
+//}
 
 //-------------------------
 // MAIN EXECUTION
@@ -726,13 +811,13 @@ function stop_animation() {
 //-------------------------
 // main functionality begins here
 // what should happen when the user moves the mouse?
-theGame = document.getElementById("myCanvas");
+//theGame = document.getElementById("myCanvas");
 //document.mousemove(onMouseMove); // register the mouse move function
 //document.keypress(onKeyPress);   // register onKeyPress function
-theGame.addEventListener('keydown', function (event) {
-  onKeyDown(event);
-}, false);
-//theGame.addEventListener('mousemove', function(event) {
-//onMouseMove(event);
+//theGame.addEventListener('keydown', function(event) {
+  //onKeyDown(event);
 //}, false);
-init();                             // initialize & begin game
+//theGame.addEventListener('mousemove', function(event) {
+  //onMouseMove(event);
+//}, false);
+//init();                             // initialize & begin game
