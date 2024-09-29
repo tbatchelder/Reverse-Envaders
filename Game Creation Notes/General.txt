@@ -1,0 +1,163 @@
+General Game Creation Notes
+Author: Timothy Batchelder
+Date: 09-SEP-2024
+
+Reference: Core HTML 5 2D Game Programming
+
+Overview: Software development allows a user to make nearly anything they can image on a screen.  There is no physical product, no engineering requirements and no massive financial investment.  All that is required is an investment of time and an idea.  Here, we will attempt to guide the reader through the basic skills needed to create an animated game.
+
+What kind of knowledge is needed to make a game?
+  1. Knowledge of a programming language; in this case, HTML, CSS and JavaScript.
+  2. Basic mathematics like trigonometry.
+  3. While not necessary, how to use an IDE is extremely helpful.
+
+What isn't needed?
+  1. The user doesn't need to be an artist.  There is plenty of free, open-source artwork to use.
+  2. The user doesn't need to be a musician.  Again, there is plenty of free sound files.
+  3. The user doesn't need any of the "modern" frameworks or libraries ... unless they want to.
+
+What are some of the things that can be done in a game?
+  1. Create smooth, flicker-free animations.
+  2. Scroll a background in any direction.
+  3. Detect collisions between the various sprites in the game.
+  4. Animate sprites to make them appear to move.
+  5. Simulate walking, running or jumping characters; basically characters in action.
+  6. Simulate gravity.
+  7. Create special effects like smoke.
+  8. Respond to user keyboard actions.
+
+Definitions:
+  Sprite: a visual representation of an object in the game (user controlled or not) that performs actions in the game; typically animated in some way.
+  Behavior: the actions that a Sprite are allowed to perform or respond too.  These are programmed in JavaScript and have an "execute" method.  These then manipulate the Sprite in some manner.
+
+What should every game do?
+  1. It should pause when it loses focus.
+  2. It should have a countdown timer before resuming play after a pause.
+  3. It should detect and react to slowly running processing.
+  4. Allow the user to interact with it in some manner.
+  5. Control the flow of time throughout the game.  This prevents "stuttering" and missing events.
+
+==========================================================================================================================
+
+Getting Started
+  Before diving into the code, we need to set up the workspace for the game.  Initially we need to set up the file structure which will contain all of the material used by the game.  The actual names of the folder don't matter but there should be a logical organization to them.  Below is an example of a typical file structure.
+
+  Within the HTML document, we will start with a basic HTML5 webpage layout with a header, footer and a single div that contains a canvas element.  Nearly all game action will occur within the canvas element.  Below is an example of a typical html 5 document with a canvas object.
+
+  Finally, we will start with a template for the javascript file.  Within this, we will break up the code into logical sections based upon their fuctions: drawing, initialization, keystroke manager, etc.  Below is an example template to use.
+
+==========================================================================================================================
+
+Starting File Structure
+  index.html
+    css folder
+    image folder
+    javascript folder
+    sound folder
+
+==========================================================================================================================
+
+Starting HTML Template
+  ```
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta http-equiv="content-type" content="text/html" />  
+      <title>{your game name}</title>
+      <meta name="copyright" content="{your copyright}" />
+      <meta name="author" content="{your name}" />
+    </head>
+    <body>
+      <header></header>
+      <main>
+        <div id="canvas">
+          <canvas id="gameCanvas" height="#" width="#" tabindex="1"></canvas>
+        </div>
+      </main>
+      <footer></footer>
+      <script></script>
+    </body>
+  </html> ```
+  
+==========================================================================================================================
+
+Start JavaScript Template
+  ```
+  // {game name}
+  // Author: {author}
+  // Date: {date}
+
+  //------------------------------------
+  // VARIABLE INITIALIZATION
+  //------------------------------------
+  // Global container for variables and objects
+  let g = [];   
+
+  // Canvas constants
+
+  // Game constants
+
+  // Game variables
+
+  // Enemy variables
+
+  // Player variables
+  //------------------------------------
+
+  //------------------------------------
+  // FUNCTION DECLARATIONS
+  //------------------------------------
+  //------------------------------------
+  // LANDSCAPE INITIALIZATION FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // GAMEPIECE INITIALIZATION FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // NPC PIECE INITIALIZATION FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // PLAYER INITIALIZATION FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // LANDSCAPE DRAWING FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // GAMEPIECE DRAWING FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // NPCPIECE DRAWING FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // PLAYER DRAWING FUNCTIONS
+  //------------------------------------
+
+  //------------------------------------
+  // KEY CONTROLLER
+  //------------------------------------
+
+  //------------------------------------
+  // ANIMATION CONTROLLER
+  //------------------------------------
+
+  //------------------------------------
+  // GAME INITIALIZATION
+  //------------------------------------
+
+  //------------------------------------
+  // MAIN EXECUTION
+  //------------------------------------
+  ```
+
+==========================================================================================================================
+
+Programming the Game
+  When writing any JavaScript powered game, the designer needs to be aware of the game's varialbe scope.  

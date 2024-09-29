@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html" />
+        
+  	<title>Reverse Envaders</title>
+    
+    <link rel="stylesheet" href="vista/world.css" />
+    <link rel="stylesheet" href="vista/atmos.css" />
+    <link rel="stylesheet" href="vista/country.css" />
+
+    <meta name="copyright" content="B&E's Anthro Movies Inc, 2024" />
+  	<meta name="author" content="Timothy Batchelder" />
+  </head>
+
+  <body>
+    <header>
+
+    </header>
+        
+    <main>
+      <div class="info">
+        <h1>Reverse Envaders</h1>
+        <h2>So, what is this?</h2>
+        <p>This is an old idea I had from 2013 that I would like to resurrent as an example of my ability.</p>
+        <p>So, back then, I was using Director.  This was a great program from Macromedia (along with Flash).  
+          It allowed you to build entire programs using it's Lingo code.  It even eventually had some of the first
+          3D modeling that you could get on the web.  Sadly, Adobe bought it and basically killed it.  Project dead.
+        </p>
+        <p>Now that my site is closing, I need a new career.  So I've been looking at my old ideas and seeing if they
+          can be resurrected in some manner.  This seems like a "simple" possibility.
+        </p>
+        <h2>Premise</h2>
+        <p>It's the opposite of Space Invaders.  Instead of controlling the cannon and shooting the aliens, YOU'RE
+          the "aliens" and your mission is to destroy the cities.  ... wow, that sounds a bit evil ... so, let's make
+          a bit of a change.  You're not an alien, you're a agent of Gia and your mission is to stop the advance of
+          humans that are destroying the world.  So, you're not an "Invader", you're an Environmental Invader.
+        </p>
+        <h2>Things to do</h2>
+        <ol>
+          <li>Resurrect it as an active idea. DONE</li>
+          <li>Set it up in VS Code. DONE</li>
+          <li>Create a Git repository to collaborate.  DONE</li>
+          <li>Go thru it and clean out the junk.  Inprogress</li>
+          <li>Create this to define what is needed. Inprogress</li>
+          <li>Build a layout format. Done</li>
+          <li>Decide on a color scheme. Inprogress</li>
+          <li>Decide on a naming covention for files. Inprogress</li>
+          <li>Get a single sprite to show up from a list of sprites.</li>
+          <li>Get a single sprite to animate it's movements. Inprogress</li>
+          <li>Get a single sprite to move across the screen within limits. Inprogress</li>
+          <li>Get a row of sprites to move across the screen within limits. Inprogress</li>
+          <li>Get multiple rows of sprites to move within limits. Inprogress</li>
+          <li>Get a single sprite to fire based on a keypress. Inprogress</li>
+          <li>Get random landscape to show up. Inprogress</li>
+          <li>Get NPC gun to move within limits. Inprogress</li>
+          <li>Get NPC gun to select and track a target.</li>
+          <li>Get NPC gun to avoid incoming fire.</li>
+          <li>Get NPC gun to fire at player.</li>
+          <li>Get NPC gun to not fire at shields. May not be needed</li>
+          <li>Get NPC city to build parts.</li>
+          <li>Get NPC super weapon to fill up based on parts made. Not needed</li>
+          <li>Get NPC fighters to move within limits.</li>
+          <li>Get NPC fighters to fire on targets.</li>
+          <li>Get NPC fighters to explode when hit.</li>
+          <li>Get shield damaged when hit.</li>
+          <li>Get shield to absorb shots.</li>
+          <li>Get player unit charging to follow each unit. Inprogress</li>
+          <li>Get player to not fire while charging. Inprogress</li>
+          <li>Get player to fire only when charged. Inprogress</li>
+          <li>Get player super-charge to grow as "damage" is done. Inprogress</li>
+          <li>Get player units super-charged.</li>
+          <li>Get player rewards scale. Inprogress</li>
+          <li>Find a sprite creation software. Inprogress</li>
+          <li>Three rows of keys: lower = shield breakers, middle: gun hitters, top: city breakers</li>
+          <li>Number keys will unleash specials</li>
+          <li>Rows of nine: middle controlled by spacebar for heavy weapon</li>
+        </ol>
+      </div>
+      <!-- Game Canvas -->
+      <div id="gameCanvas">
+        <div id="title">
+          <h1>Reverse Envaders</h1>
+        </div>
+      
+        <div id="compLevels">
+      
+        </div>
+        <div style="display:none;">
+          <img id="scream" width="220" height="277" src="img/alien.png">
+        </div>
+      
+        <div id="canvas">
+          <canvas id="myCanvas" height="800" width="1000" style="border: 1px solid black;" tabindex="1"></canvas>
+        </div>
+      
+        <div id="playerLevels">
+      
+        </div>
+      </div>
+    </main>
+        
+    <footer>
+        
+    </footer>
+    <script src="genes/movesprite.js"></script>
+    <!-- Background sound used during the game -->
+    <!-- <audio id="bg">
+      <source src="waves/music.mp3" type="audio/mpeg" loop />
+      <source src="waves/music.ogg" type="audio/ogg" loop />
+    </audio> -->
+    <!-- Shooting sounds -->
+    <!-- <audio id="shots">
+      <source src="waves/shoot.mp3" type="audio/mpeg" />
+      <source src="waves/shoot.ogg" type="audio/ogg" />
+    </audio> -->
+    <!-- Explosion sounds -->
+    <!-- <audio id="bg">
+      <source src="waves/explosion.mp3" type="audio/mpeg" />
+      <source src="waves/explosion.ogg" type="audio/ogg" />
+    </audio> -->
+    
+    <!-- Main game area -->
+    <!-- <div id="world"> -->
+    
+      <!-- Game Canvas -->
+      <!-- <div id="gameCanvas">
+        <div id="title">
+          <h1>Reverse Envaders</h1>
+        </div>
+        
+        <div id="compLevels">
+          
+        </div>
+        
+        <div id="canvas">
+          <canvas height="750px" width="700px"></canvas>
+        </div>
+        
+        <div id="playerLevels">
+          
+        </div>
+      </div> -->
+    <!-- </div> -->
+  </body>
+  <!-- <script src="orders/frameControl.js"></script>
+  <script src="orders/beings.js"></script>
+  <script src="orders/highcommand.js"></script>
+  <script src="orders/highCommand.js"></script> -->
+  <!-- <script src="genes/basics.js"></script> -->
+  <script src="genes/codepen.js"></script>
+</html>
