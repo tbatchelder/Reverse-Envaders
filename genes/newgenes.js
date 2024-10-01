@@ -9,6 +9,7 @@
 let g = [];   
 
 // Canvas constants
+g.CTX = document.getElementById("myCanvas").getContext("2d");
 
 // Game constants
 
@@ -65,7 +66,14 @@ let g = [];
 //------------------------------------
 // GAME INITIALIZATION
 //------------------------------------
+function startGame() {
+  // Object builds
+
+  // Start the animation sequence
+  startAnimation();
+}
 
 //------------------------------------
 // MAIN EXECUTION
 //------------------------------------
+startGame();

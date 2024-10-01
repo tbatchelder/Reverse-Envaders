@@ -160,4 +160,35 @@ Start JavaScript Template
 ==========================================================================================================================
 
 Programming the Game
-  When writing any JavaScript powered game, the designer needs to be aware of the game's varialbe scope.  
+
+
+  The game will be using the browser's canvas.  All actions for the game will be handled therein and are controlled by JavaScript.  However, some events will be handled outside of the canvas such as keys being pressed.  These will be handled by the browser window and passed to the canvas which will implement the final results.
+
+  HTML Setup
+    The first thing we'll want to do is fill out the meta tags for the game.  For now, any name will do but the author and copyright should at least be filled out.  Next, we need to define the size of the game canvas area.  Additionally, we add a small style to the canvas just so we can see where it is.  We'll also be adding a tabindex value to give the canvas focus; without focus, any keys pressed will not be passed to the canvas.
+    ```style="border: 1px solid black;" tabindex="1"```
+  
+  CSS Setup
+    For now, we will not worry about this.
+
+  JavaScript Setup
+    Create a new JavaScript file and link it into the index.html page at the bottom using the provided <script> tags.  Whenver we add JavaScript to a page, it should load as the last item in the <body> tag so that the DOM is created prior to trying to work with it through JavaScript.
+
+    When writing any JavaScript powered game, the designer needs to be aware of the game's varialbe scope.  Making all variables with a global scope runs a large risk of them being over-written by any other application or script running in the browser window.  This can be handled in several ways.  One of which is to create a single global variable and store everything in there.  Another way is to create a single variable which stores all variables, functions and methods.  For simplicity, we will start by creating the global holder:
+      ```g = []```
+    All variables, constants and functions (methods) will be stored within the g variable.
+
+    In order to perform any actions with the Canvas, JavaScript needs a reference to it in order to draw upon it.  This will be accessed through the game using:
+      ```g.CTX = document.getElementById("myCanvas").getContext("2d");```
+    This will be added to the Canvas Constants section.
+    
+    In order for the game to run, variables need to be initialized, objects used built and sprites sheets read.  To accomplish this, in Main Execution, we will add a call to a function that will start the initialization process:
+      ```startGame();```
+
+    The initialization function can now be added to the Game Initialization section.  This will call all object building functions later on as they are built.
+      ```function startGame() {} ```
+    
+    Within the startGame function, we will create two sections: one for obejct builds and one to start the game animination using:
+      ```startAnimation();```
+    
+    
